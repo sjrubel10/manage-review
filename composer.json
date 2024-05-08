@@ -1,0 +1,18 @@
+{
+    "name": "manage-review/fake",
+    "description": "A WordPress plugin for generating, deleting, editing, and managing fake reviews",
+    "type": "wordpress-plugin",
+    "license": "GPLv2",
+    "autoload": {
+        "psr-4": {
+            "Manage\\Review\\": "includes/"
+        }
+    },
+    "authors": [
+        {
+            "name": "sjrubel10"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
