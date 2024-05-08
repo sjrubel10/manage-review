@@ -95,7 +95,7 @@ final class Manage_Review {
             update_option( 'manage-review_installed', time() );
         }
 
-        update_option( 'manage-review_version', PA_ProductAnnouncer_VERSION );
+        update_option( 'manage-review_version', MR_ManageReview_VERSION );
     }
 }
 
