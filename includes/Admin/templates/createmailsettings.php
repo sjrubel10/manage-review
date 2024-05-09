@@ -22,23 +22,25 @@ $categorySelector = 'all category';
     h1, h2 {
         margin-top: 0;
     }
+
     label {
         display: block;
         margin-bottom: 5px;
         font-weight: bold;
     }
-    input[type="text"],
-    textarea {
+
+    /* Style for form inputs */
+    input[type="number"],
+    input[type="date"],
+    input[type="text"] {
         width: 100%;
-        padding: 10px;
-        margin-bottom: 20px;
+        padding: 8px;
+        margin-bottom: 15px;
         border: 1px solid #ccc;
-        border-radius: 5px;
+        border-radius: 4px;
         box-sizing: border-box;
     }
-    textarea {
-        height: 150px;
-    }
+
     input[type="submit"] {
         padding: 10px 20px;
         background-color: #007bff;
@@ -60,6 +62,19 @@ $categorySelector = 'all category';
         border-radius: 5px;
         margin: 5px 5px 15px 5px;
     }
+
+
+    .progress {
+        width: 100%;
+        background-color: #f0f0f0;
+        margin: 10px 0;
+    }
+
+    .progress-bar {
+        width: 0%;
+        height: 20px;
+        background-color: #4caf50;
+    }
 </style>
 
 <div class="container">
@@ -70,11 +85,14 @@ $categorySelector = 'all category';
         <label for="numberOfReviewPerProduct">Number Of Review Per Product:</label>
         <input type="number" id="numberOfReviewPerProduct" name="numberOfReviewPerProduct" value="1"><br>
 
+        <label for="numberOfReviewRating">Review Rating:</label>
+        <input type="number" id="numberOfReviewRating" name="numberOfReviewRating" value="5"><br>
+
         <label for="reviewStartDate">Review Start Date</label>
-        <input type="date" id="reviewStartDate" name="reviewStartDate" value="<?php echo esc_attr( date("Y-m-d") ); ?>"><br>
+        <input type="date" id="reviewStartDate" name="reviewStartDate" value="<?php echo esc_attr( gmdate("Y-m-d") ); ?>"><br>
 
         <label for="reviewEndDate">Review End Date</label>
-        <input type="date" id="reviewEndDate" name="reviewEndDate" value="<?php echo esc_attr( date("Y-m-d") )?>"><br>
+        <input type="date" id="reviewEndDate" name="reviewEndDate" value="<?php echo esc_attr( gmdate("Y-m-d") )?>"><br>
 
         <h2>Select Category</h2>
         <label for="categorySelector">Category:</label>
@@ -82,6 +100,10 @@ $categorySelector = 'all category';
 
         <input type="submit" name="submit" value="Add reviews">
     </form>
+
+    <div class="progress" id="progressHolder" style="display: none">
+        <div id="progress-bar" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -89,6 +111,8 @@ $categorySelector = 'all category';
     jQuery(document).ready(function() {
 
         function set_settings_data( formData, type, path ){
+            jQuery("#progressHolder").show();
+            animateProgressBar( 10, 2000 );
             jQuery.ajax({
                 type: type,
                 url: path,
@@ -98,7 +122,8 @@ $categorySelector = 'all category';
                 },
                 data: JSON.stringify(formData),
                 success: function(response) {
-                    alert(response);
+                    // alert(response);
+                    animateProgressBar( 100, 2000 );
                 },
                 error: function(xhr, status, error) {
                     console.error(xhr.responseText);
@@ -106,30 +131,28 @@ $categorySelector = 'all category';
             });
         }
 
-
-
         jQuery('#emailSettingsForm').submit(function(e) {
             e.preventDefault(); // Prevent form submission
-
-            // Gather input field values into an object fromname
             var formData = {
                 'numberOfReviewPerProduct': jQuery('#numberOfReviewPerProduct').val(),
                 'reviewStartDate': jQuery('#reviewStartDate').val(),
                 'reviewEndDate': jQuery('#reviewEndDate').val(),
                 'categorySelector': jQuery('#categorySelector').val(),
+                'numberOfReviewRating': jQuery('#numberOfReviewRating').val(),
             };
-
             // Add nonce to form data
             formData.nonce = '<?php echo esc_js( wp_create_nonce( 'wp_rest' ) ); ?>';
-
             let path ='<?php echo esc_url_raw( rest_url( 'createReviews/v1/create_multiple_review' ) ); ?>';
             let type = 'POST';
-
-            // console.log( formData );
             set_settings_data( formData, type , path );
-            // Send the data to the custom REST API endpoint
-
         });
+
+        function animateProgressBar( progress, duration ) {
+            $('.progress-bar').animate({
+                width: progress + '%'
+            }, duration );
+        }
+
     });
 
 

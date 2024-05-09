@@ -11,12 +11,12 @@ class CreateMailSettings extends WP_REST_Controller
 {
 
     private $product_reviews;
+    private $current_user;
     function __construct()
     {
         $this->namespace = 'createReviews/v1';
 //        $this->rest_base = 'mail-settings';
 //        $this->get_random_date();
-
         $this->product_reviews = array(
             "I've had this product for months now, and it's still as good as new.",
             "This product is incredibly easy to use, even for someone like me who isn't tech-savvy.",
@@ -49,6 +49,9 @@ class CreateMailSettings extends WP_REST_Controller
             "I purchased this product on a whim, and it turned out to be one of the best decisions I've made.",
             "This product has become an essential part of my daily routine. I don't know how I lived without it."
         );
+
+        $this->current_user = wp_get_current_user();
+//        error_log( print_r( ['current_user'=>$this->current_user], true ) );
     }
 
     public function register_routes()
@@ -68,6 +71,24 @@ class CreateMailSettings extends WP_REST_Controller
 
     }
 
+    public function get_client_ip() {
+    $ipaddress = '';
+        if (getenv('HTTP_CLIENT_IP'))
+            $ipaddress = getenv('HTTP_CLIENT_IP');
+        else if(getenv('HTTP_X_FORWARDED_FOR'))
+            $ipaddress = getenv('HTTP_X_FORWARDED_FOR');
+        else if(getenv('HTTP_X_FORWARDED'))
+            $ipaddress = getenv('HTTP_X_FORWARDED');
+        else if(getenv('HTTP_FORWARDED_FOR'))
+            $ipaddress = getenv('HTTP_FORWARDED_FOR');
+        else if(getenv('HTTP_FORWARDED'))
+           $ipaddress = getenv('HTTP_FORWARDED');
+        else if(getenv('REMOTE_ADDR'))
+            $ipaddress = getenv('REMOTE_ADDR');
+        else
+            $ipaddress = 'UNKNOWN';
+        return $ipaddress;
+    }
     public function create_send_mail_settings( $request ){
         $nonce = $request->get_header('X-WP-Nonce');
         if ( ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
@@ -85,47 +106,40 @@ class CreateMailSettings extends WP_REST_Controller
 //            'category'  => array( $category_slug ),
         ) );
 
-        $review_limit_per_product  = 1;
+        $review_limit_per_product  = sanitize_text_field( $form_data['numberOfReviewPerProduct'] );
+        $date_start = sanitize_text_field( $form_data['reviewStartDate'] );
+        $date_end = sanitize_text_field( $form_data['reviewEndDate'] );
+        $review_rating = sanitize_text_field( $form_data['numberOfReviewRating'] );
 
-        $date1 = '2024/08/09';
-        $date2 = '2024/08/15';
-        $author_name = 'rubel';
-        $author_email = 'rubel@gmail.com';
-        $author_url = 'rubel.com';
-        $author_ip = '1.0.0.1';
+        $author_name = $this->current_user->user_login;
+        $author_email = $this->current_user->user_email;
+        $author_url = $this->current_user->user_url;
+        $author_ip = $this->get_client_ip();
 
-
-        $product_ids = [36];
+//        $product_ids = [131];
         $is_inserted = '';
         if( count( $product_ids ) > 0 ){
             foreach( $product_ids as $post_id ){
                 for( $i =0; $i<$review_limit_per_product; $i++ ){
-                    $is_inserted = $this->insert_review_into_comments_table( $post_id, $author_name, $author_email, $author_url, $author_ip, $date1, $date2 );
+                    $is_inserted = $this->insert_review_into_comments_table( $post_id, $author_name, $author_email, $author_url, $author_ip, $date_start, $date_end, $review_rating );
                 }
             }
         }
 
         return $is_inserted;
-//        error_log( print_r( ['$product_ids'=>$product_ids], true ) );
     }
 
-    public function insert_review_into_comments_table( $post_id, $author_name, $author_email, $author_url, $author_ip, $date1, $date2 ) {
+    public function insert_review_into_comments_table( $post_id, $author_name, $author_email, $author_url, $author_ip, $date1, $date2, $review_rating ) {
         // Sanitize input data
         $post_id = intval($post_id);
         $author_name = sanitize_text_field($author_name);
         $author_email = sanitize_email($author_email);
         $author_url = esc_url_raw($author_url);
         $author_ip = sanitize_text_field($author_ip);
-//        $comment_content = wp_kses_post($comment_content);
-
         $comment_content_key = array_rand( $this->product_reviews );
         $comment_content = $this->product_reviews[$comment_content_key];
-//        error_log( print_r( ['$comment_content'=>$comment_content], true ) );
-
-
         $get_review_date_time = $this->get_random_review_date( $date1, $date2 );
 
-        // Prepare data for insertion
         $data = array(
             'comment_post_ID'      => $post_id,
             'comment_author'       => $author_name,
@@ -136,29 +150,31 @@ class CreateMailSettings extends WP_REST_Controller
             'comment_date'         => $get_review_date_time['comment_date'],
             'comment_date_gmt'     => $get_review_date_time['comment_date_gmt'],
             'comment_approved'     => 1, // Automatically approve comments
+            'comment_agent'        => $_SERVER['HTTP_USER_AGENT'],
             'comment_type'         => 'review', // Empty string for regular comments
+            'comment_parent'       => 0,
+            'user_id'              => $this->current_user->ID,
         );
 
         // Insert data into the wp_comments table
         $inserted = wp_insert_comment($data);
         if( $inserted ){
             $meta_key = 'rating';
-            $meta_value = 5;
-            $meta_added = add_comment_meta( $inserted, $meta_key, $meta_value, false );
+            $meta_added = add_comment_meta( $inserted, $meta_key, $review_rating, false );
         }
 
         return $inserted;
     }
 
     public function get_random_review_date( $date1, $date2 ){
-        $timestamp1 = strtotime($date1);
-        $timestamp2 = strtotime($date2);
-        $minTimestamp = min($timestamp1, $timestamp2);
-        $maxTimestamp = max($timestamp1, $timestamp2);
-        $randomTimestamp = mt_rand($minTimestamp, $maxTimestamp);
-        date_default_timezone_set('GMT');
-        $randomDateTimeGMT = gmdate('d-m-Y H:i:s', $randomTimestamp);
-        $randomDateTime = date('d-m-Y H:i:s', $randomTimestamp);
+        $timestamp1 = strtotime( $date1 );
+        $timestamp2 = strtotime( $date2 );
+        $minTimestamp = min( $timestamp1, $timestamp2 );
+        $maxTimestamp = max( $timestamp1, $timestamp2 );
+        $randomTimestamp = wp_rand( $minTimestamp, $maxTimestamp );
+//        date_default_timezone_set('GMT');
+        $randomDateTimeGMT = gmdate('Y-m-d H:i:s', $randomTimestamp);
+        $randomDateTime = gmdate('Y-m-d H:i:s', $randomTimestamp);
         $commented_date_time =array(
             'comment_date' => $randomDateTime,
             'comment_date_gmt' => $randomDateTimeGMT,
