@@ -75,6 +75,35 @@ $categorySelector = 'all category';
         height: 20px;
         background-color: #4caf50;
     }
+
+    .selected-category {
+        background-color: #f0f0f0;
+        padding: 5px 30px 5px 10px;
+        margin-right: 5px;
+        margin-bottom: 5px;
+        border-radius: 5px;
+        display: inline-block;
+        position: relative;
+    }
+    .selected-category .remove-button {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        margin: 0;
+    }
+    .selectedCategories{
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        cursor: pointer;
+    }
 </style>
 
 <div class="container">
@@ -96,9 +125,21 @@ $categorySelector = 'all category';
 
         <h2>Select Category</h2>
         <label for="categorySelector">Category:</label>
-        <input type="text" id="categorySelector" name="categorySelector" value="<?php echo esc_attr($categorySelector); ?>"><br>
+<!--        <input type="text" id="categorySelector" name="categorySelector" value="--><?php //echo esc_attr($categorySelector); ?><!--"><br>-->
+        <ul id="selectedCategories" class="selectedCategories">
+            <li id="all_Categories" class="selected-category">All Categories</li>
+        </ul>
+        <div class="categorySelectHolder" id="categorySelectHolder" style="display: none">
+            <select id="categorySelect" multiple>
+                <option id="category_1" value="category_1">Category 1</option>
+                <option id="category_1" value="category_2">Category 2</option>
+                <option id="category_1" value="category_3">Category 3</option>
+                <option id="category_1" value="category_4">Category 4</option>
+                <option id="category_1" value="category_5">Category 5</option>
+            </select>
+        </div>
 
-        <input type="submit" name="submit" value="Add reviews">
+        <input type="submit" name="submit" value="Add Multiple reviews">
     </form>
 
     <div class="progress" id="progressHolder" style="display: none">
@@ -109,6 +150,51 @@ $categorySelector = 'all category';
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     jQuery(document).ready(function() {
+
+        var selectedCategories = [];
+        jQuery('#categorySelect').on('change', function() {
+            jQuery('#categorySelect option:selected').each(function() {
+                var $this = $(this);
+                if (!$this.prop('disabled')) {
+                    selectedCategories.push($this.text());
+                    $this.prop('disabled', true); // Disable the option
+                }
+                var index = (this).value; // Get the current length of the array as the index
+                var value = $this.text(); // Generate a value based on the index (example)
+                var removeButton = jQuery('<button>').addClass('remove-button').html('&times;');
+                var div = jQuery('<li id=selected-'+index+'>').addClass('selected-category').text(value);
+                div.append(removeButton);
+                $('#selectedCategories').append(div);
+
+                jQuery("#all_Categories").remove();
+            });
+        });
+
+        // Event listener for removing selected category
+        $('#emailSettingsForm').on('click', '#selectedCategories', function() {
+            // alert('Clicked');
+            jQuery("#categorySelectHolder").show();
+        });
+
+        $('#selectedCategories').on('click', '.remove-button', function() {
+            let text = $(this).parent().text().trim('x');
+            text = text.replace('×', '');
+            $('#categorySelect option').filter(function() {
+                return $(this).text().trim() === text;
+            }).prop('disabled', false); // Enable the option
+            $(this).parent().remove(); // Remove the selected category div
+
+            let liExists = $('#selectedCategories').find('li').length;
+            if( liExists === 0 ){
+                jQuery("#selectedCategories").append( '<li id="all_Categories" class="selected-category">All Categories</li>' );
+            }
+
+        });
+
+
+
+
+
 
         function set_settings_data( formData, type, path ){
             jQuery("#progressHolder").show();
