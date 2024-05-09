@@ -1,10 +1,11 @@
 <?php
 //echo 'Hello World';
-
-$categorySelector = 'all category';
-// Access individual values from the array
+$taxonomy = 'product_cat'; // WooCommerce product category taxonomy
+$terms = get_terms( array(
+    'taxonomy' => $taxonomy,
+    'hide_empty' => false, // Set to false to include empty categories
+));
 ?>
-
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -43,12 +44,13 @@ $categorySelector = 'all category';
 
     input[type="submit"] {
         padding: 10px 20px;
-        background-color: #007bff;
+        background-color: #4682c3;
         color: #fff;
         border: none;
         border-radius: 5px;
         cursor: pointer;
         transition: background-color 0.3s ease;
+        margin-top: 15px;
     }
     input[type="submit"]:hover {
         background-color: #0056b3;
@@ -103,6 +105,14 @@ $categorySelector = 'all category';
         border-radius: 4px;
         box-sizing: border-box;
         cursor: pointer;
+        margin-block-end: 0;
+    }
+    .categorySelectHolder{
+        margin-bottom: 20px;
+    }
+    .wp-core-ui select[multiple]{
+        width: 300px;
+        padding: 10px;
     }
 </style>
 
@@ -123,19 +133,18 @@ $categorySelector = 'all category';
         <label for="reviewEndDate">Review End Date</label>
         <input type="date" id="reviewEndDate" name="reviewEndDate" value="<?php echo esc_attr( gmdate("Y-m-d") )?>"><br>
 
-        <h2>Select Category</h2>
-        <label for="categorySelector">Category:</label>
-<!--        <input type="text" id="categorySelector" name="categorySelector" value="--><?php //echo esc_attr($categorySelector); ?><!--"><br>-->
+        <label for="categorySelector">Select Category:</label>
         <ul id="selectedCategories" class="selectedCategories">
             <li id="all_Categories" class="selected-category">All Categories</li>
         </ul>
+
+
         <div class="categorySelectHolder" id="categorySelectHolder" style="display: none">
             <select id="categorySelect" multiple>
-                <option id="category_1" value="category_1">Category 1</option>
-                <option id="category_1" value="category_2">Category 2</option>
-                <option id="category_1" value="category_3">Category 3</option>
-                <option id="category_1" value="category_4">Category 4</option>
-                <option id="category_1" value="category_5">Category 5</option>
+                <?php if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
+                foreach ( $terms as $term ) { ?>
+                <option id="<?php esc_attr_e( $term->slug, 'manage-review' );?>" value="<?php esc_attr_e( $term->slug, 'manage-review' );?>"><?php esc_attr_e( $term->name, 'manage-review' );?></option>
+                <?php } }?>
             </select>
         </div>
 
@@ -170,10 +179,16 @@ $categorySelector = 'all category';
             });
         });
 
-        // Event listener for removing selected category
+        let is_category_shows = 0;
         $('#emailSettingsForm').on('click', '#selectedCategories', function() {
-            // alert('Clicked');
-            jQuery("#categorySelectHolder").show();
+            if( is_category_shows === 0){
+                is_category_shows ++;
+                jQuery("#categorySelectHolder").show();
+            }else{
+                is_category_shows --;
+                jQuery("#categorySelectHolder").hide();
+            }
+
         });
 
         $('#selectedCategories').on('click', '.remove-button', function() {
@@ -187,13 +202,9 @@ $categorySelector = 'all category';
             let liExists = $('#selectedCategories').find('li').length;
             if( liExists === 0 ){
                 jQuery("#selectedCategories").append( '<li id="all_Categories" class="selected-category">All Categories</li>' );
+                jQuery("#categorySelectHolder").hide();
             }
-
         });
-
-
-
-
 
 
         function set_settings_data( formData, type, path ){
@@ -219,13 +230,23 @@ $categorySelector = 'all category';
 
         jQuery('#emailSettingsForm').submit(function(e) {
             e.preventDefault(); // Prevent form submission
+
+            jQuery("#categorySelectHolder").hide();
+
+            let selectedCategoryArray = [];
+            jQuery("#selectedCategories li").each(function(){
+                let eachCategory = jQuery(this).attr('id').replace('selected-', '').trim();
+                selectedCategoryArray.push( eachCategory );
+            });
+
             var formData = {
                 'numberOfReviewPerProduct': jQuery('#numberOfReviewPerProduct').val(),
                 'reviewStartDate': jQuery('#reviewStartDate').val(),
                 'reviewEndDate': jQuery('#reviewEndDate').val(),
-                'categorySelector': jQuery('#categorySelector').val(),
+                'categorySelector': selectedCategoryArray,
                 'numberOfReviewRating': jQuery('#numberOfReviewRating').val(),
             };
+
             // Add nonce to form data
             formData.nonce = '<?php echo esc_js( wp_create_nonce( 'wp_rest' ) ); ?>';
             let path ='<?php echo esc_url_raw( rest_url( 'createReviews/v1/create_multiple_review' ) ); ?>';

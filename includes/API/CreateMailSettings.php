@@ -98,13 +98,22 @@ class CreateMailSettings extends WP_REST_Controller
         $form_data = $request->get_json_params();
         unset($form_data['nonce']);
 
-        $category_slug = 'tshirts';
-        $product_ids = wc_get_products( array(
+        $categories_slug = $form_data['categorySelector'];
+//        $is_all_products = array_search("all_Categories", $categories_slug );
+
+        $args = array(
             'return' => 'ids', // Return only product IDs
             'status' => 'publish',
             'limit' => -1,
-//            'category'  => array( $category_slug ),
-        ) );
+//            'category'  =>  $categories_slug ,
+        );
+        if ( !in_array( 'all_Categories', $categories_slug ) ) {
+            $args['category'] = $categories_slug;
+        }
+
+        error_log( print_r( [ '$args'=>$args ], true ) );
+
+        $product_ids = wc_get_products( $args );
 
         $review_limit_per_product  = sanitize_text_field( $form_data['numberOfReviewPerProduct'] );
         $date_start = sanitize_text_field( $form_data['reviewStartDate'] );
@@ -116,12 +125,11 @@ class CreateMailSettings extends WP_REST_Controller
         $author_url = $this->current_user->user_url;
         $author_ip = $this->get_client_ip();
 
-//        $product_ids = [131];
         $is_inserted = '';
         if( count( $product_ids ) > 0 ){
             foreach( $product_ids as $post_id ){
                 for( $i =0; $i<$review_limit_per_product; $i++ ){
-                    $is_inserted = $this->insert_review_into_comments_table( $post_id, $author_name, $author_email, $author_url, $author_ip, $date_start, $date_end, $review_rating );
+//                    $is_inserted = $this->insert_review_into_comments_table( $post_id, $author_name, $author_email, $author_url, $author_ip, $date_start, $date_end, $review_rating );
                 }
             }
         }
