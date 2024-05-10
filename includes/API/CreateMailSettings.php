@@ -72,7 +72,7 @@ class CreateMailSettings extends WP_REST_Controller
             [
                 [
                     'methods' => WP_REST_Server::CREATABLE,
-                    'callback' => [$this, 'generate_review_by_batch'],
+                    'callback' => [$this, 'generate_review_from_settings'],
                     'permission_callback' => [$this, 'get_item_permissions_check'],
                     'args' => [$this->get_collection_params()],
                 ],
@@ -120,7 +120,7 @@ class CreateMailSettings extends WP_REST_Controller
     public function generate_review_by_batch( $request ){
 
         $product_its = $request->get_json_params();
-        error_log( print_r( [ '$request' => $request ], true ) );
+//        error_log( print_r( [ '$request' => $request ], true ) );
 
         return true;
     }
@@ -150,7 +150,7 @@ class CreateMailSettings extends WP_REST_Controller
         }
         $form_data = $request->get_json_params();
         unset($form_data['nonce']);
-        $categories_slug = $form_data['categorySelector'];
+        /*$categories_slug = $form_data['categorySelector'];
         $args = array(
             'return' => 'ids', // Return only product IDs
             'status' => 'publish',
@@ -158,8 +158,9 @@ class CreateMailSettings extends WP_REST_Controller
         );
         if ( !in_array( 'all_Categories', $categories_slug ) ) {
             $args['category'] = $categories_slug;
-        }
-        $product_ids = wc_get_products( $args );
+        }*/
+        $product_ids = $form_data['productIds'];
+//        error_log( print_r( ['$product_ids'=>$product_ids], true ) );
 
         $review_limit_per_product  = sanitize_text_field( $form_data['numberOfReviewPerProduct'] );
         $date_start = sanitize_text_field( $form_data['reviewStartDate'] );
