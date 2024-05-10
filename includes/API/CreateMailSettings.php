@@ -2,6 +2,7 @@
 
 namespace Manage\Review\API;
 
+use Manage\Review\Classes\MakeProductsbatch;
 use WP_Error;
 use WP_REST_Controller;
 use WP_REST_Response;
@@ -11,12 +12,10 @@ class CreateMailSettings extends WP_REST_Controller
 {
 
     private $product_reviews;
+    private $make_batch_product;
     private $current_user;
-    function __construct()
-    {
+    function __construct(){
         $this->namespace = 'createReviews/v1';
-//        $this->rest_base = 'mail-settings';
-//        $this->get_random_date();
         $this->product_reviews = array(
             "I've had this product for months now, and it's still as good as new.",
             "This product is incredibly easy to use, even for someone like me who isn't tech-savvy.",
@@ -49,26 +48,81 @@ class CreateMailSettings extends WP_REST_Controller
             "I purchased this product on a whim, and it turned out to be one of the best decisions I've made.",
             "This product has become an essential part of my daily routine. I don't know how I lived without it."
         );
-
         $this->current_user = wp_get_current_user();
-//        error_log( print_r( ['current_user'=>$this->current_user], true ) );
+
+        $this->make_batch_product = new MakeProductsbatch();
     }
 
-    public function register_routes()
-    {
+    public function register_routes(){
         register_rest_route(
             $this->namespace,
             '/create_multiple_review',
             [
                 [
                     'methods' => WP_REST_Server::CREATABLE,
-                    'callback' => [$this, 'create_send_mail_settings'],
+                    'callback' => [$this, 'generate_review_from_settings'],
+                    'permission_callback' => [$this, 'get_item_permissions_check'],
+                    'args' => [$this->get_collection_params()],
+                ],
+            ]
+        );
+        register_rest_route(
+            $this->namespace,
+            '/create_multiple_review_by_batch',
+            [
+                [
+                    'methods' => WP_REST_Server::CREATABLE,
+                    'callback' => [$this, 'generate_review_by_batch'],
+                    'permission_callback' => [$this, 'get_item_permissions_check'],
+                    'args' => [$this->get_collection_params()],
+                ],
+            ]
+        );
+        register_rest_route(
+            $this->namespace,
+            '/get_product_ids',
+            [
+                [
+                    'methods' => WP_REST_Server::CREATABLE,
+                    'callback' => [$this, 'get_product_ids'],
                     'permission_callback' => [$this, 'get_item_permissions_check'],
                     'args' => [$this->get_collection_params()],
                 ],
             ]
         );
 
+    }
+
+    public function get_product_ids( $request ){
+        $nonce = $request->get_header('X-WP-Nonce');
+        if ( ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
+            return new WP_Error( 'invalid_nonce', 'Invalid nonce.', array( 'status' => 403 ) );
+        }
+        $form_data = $request->get_json_params();
+        unset($form_data['nonce']);
+        $categories_slug = $form_data['categorySelector'];
+        $args = array(
+            'return' => 'ids', // Return only product IDs
+            'status' => 'publish',
+            'limit' => -1,
+        );
+        if ( !in_array( 'all_Categories', $categories_slug ) ) {
+            $args['category'] = $categories_slug;
+        }
+//        $product_ids = [];
+        $product_ids = wc_get_products( $args );
+        $review_per_product  = sanitize_text_field( $form_data['numberOfReviewPerProduct'] );
+
+        $total_products = count( $product_ids );
+        $batch_product_ids = $this->make_batch_product->make_batch_product( $product_ids, $review_per_product, $total_products );
+        return $batch_product_ids;
+    }
+    public function generate_review_by_batch( $request ){
+
+        $product_its = $request->get_json_params();
+        error_log( print_r( [ '$request' => $request ], true ) );
+
+        return true;
     }
 
     public function get_client_ip() {
@@ -89,30 +143,22 @@ class CreateMailSettings extends WP_REST_Controller
             $ipaddress = 'UNKNOWN';
         return $ipaddress;
     }
-    public function create_send_mail_settings( $request ){
+    public function generate_review_from_settings( $request ){
         $nonce = $request->get_header('X-WP-Nonce');
         if ( ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
             return new WP_Error( 'invalid_nonce', 'Invalid nonce.', array( 'status' => 403 ) );
         }
-        // Get the form data from the request body
         $form_data = $request->get_json_params();
         unset($form_data['nonce']);
-
         $categories_slug = $form_data['categorySelector'];
-//        $is_all_products = array_search("all_Categories", $categories_slug );
-
         $args = array(
             'return' => 'ids', // Return only product IDs
             'status' => 'publish',
             'limit' => -1,
-//            'category'  =>  $categories_slug ,
         );
         if ( !in_array( 'all_Categories', $categories_slug ) ) {
             $args['category'] = $categories_slug;
         }
-
-        error_log( print_r( [ '$args'=>$args ], true ) );
-
         $product_ids = wc_get_products( $args );
 
         $review_limit_per_product  = sanitize_text_field( $form_data['numberOfReviewPerProduct'] );
@@ -120,6 +166,15 @@ class CreateMailSettings extends WP_REST_Controller
         $date_end = sanitize_text_field( $form_data['reviewEndDate'] );
         $review_rating = sanitize_text_field( $form_data['numberOfReviewRating'] );
 
+        if( preg_match('/\bto\b/', $review_rating ) ){
+            $rating_ary = explode(' to ', $review_rating );
+        }else{
+            if( is_numeric( $review_rating ) ){
+                $rating_ary = $review_rating;
+            }else{
+                $rating_ary = 5;
+            }
+        }
         $author_name = $this->current_user->user_login;
         $author_email = $this->current_user->user_email;
         $author_url = $this->current_user->user_url;
@@ -129,7 +184,12 @@ class CreateMailSettings extends WP_REST_Controller
         if( count( $product_ids ) > 0 ){
             foreach( $product_ids as $post_id ){
                 for( $i =0; $i<$review_limit_per_product; $i++ ){
-//                    $is_inserted = $this->insert_review_into_comments_table( $post_id, $author_name, $author_email, $author_url, $author_ip, $date_start, $date_end, $review_rating );
+                    if( is_array( $rating_ary ) ){
+                        $review_rating = rand( $rating_ary[0], $rating_ary[1] );
+                    }else{
+                        $review_rating = $rating_ary;
+                    }
+                    $is_inserted = $this->insert_review_into_comments_table( $post_id, $author_name, $author_email, $author_url, $author_ip, $date_start, $date_end, $review_rating );
                 }
             }
         }

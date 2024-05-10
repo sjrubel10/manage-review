@@ -14,7 +14,7 @@
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
-
+// ReviewMaster
 require_once __DIR__ . '/vendor/autoload.php';
 new Manage\Review\Api();
 

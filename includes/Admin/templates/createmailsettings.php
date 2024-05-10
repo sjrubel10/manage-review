@@ -5,6 +5,16 @@ $terms = get_terms( array(
     'taxonomy' => $taxonomy,
     'hide_empty' => false, // Set to false to include empty categories
 ));
+
+$yourArrayOfData = array(
+    array( 20,21,22,23,24),
+    array( 25,26,27,28,29),
+    array( 30,31,32,33,40,41),
+    array(42,43,70,71,72),
+    array(79,94,95,96),
+);
+
+$total_batch = count( $yourArrayOfData );
 ?>
 <style>
     body {
@@ -12,7 +22,7 @@ $terms = get_terms( array(
         margin: 0;
         padding: 0;
     }
-    .container {
+    .reviewMasterContainer {
         max-width: 600px;
         margin: 50px auto;
         padding: 20px;
@@ -116,7 +126,7 @@ $terms = get_terms( array(
     }
 </style>
 
-<div class="container">
+<div class="reviewMasterContainer">
 
     <h1>Add Reviews</h1>
     <h2>Multiple Reviews Added</h2>
@@ -125,7 +135,7 @@ $terms = get_terms( array(
         <input type="number" id="numberOfReviewPerProduct" name="numberOfReviewPerProduct" value="1"><br>
 
         <label for="numberOfReviewRating">Review Rating:</label>
-        <input type="number" id="numberOfReviewRating" name="numberOfReviewRating" value="5"><br>
+        <input type="text" id="numberOfReviewRating" name="numberOfReviewRating" placeholder="5 or 1 to 5"><br>
 
         <label for="reviewStartDate">Review Start Date</label>
         <input type="date" id="reviewStartDate" name="reviewStartDate" value="<?php echo esc_attr( gmdate("Y-m-d") ); ?>"><br>
@@ -155,6 +165,13 @@ $terms = get_terms( array(
         <div id="progress-bar" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
     </div>
 </div>
+
+
+<div id="testBatchData" class="testBatchData">
+    <div class="createByBatch" id="createByBatch" style="cursor: pointer">Create By batch</div>
+    <div id="status"></div>
+</div>
+
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
@@ -219,7 +236,14 @@ $terms = get_terms( array(
                 },
                 data: JSON.stringify(formData),
                 success: function(response) {
-                    // alert(response);
+                    batches = response;
+                    // console.log(response);
+                    totalBatches = batches.length;
+                    if( totalBatches > 0 ){
+                        currentBatch = 0;
+                        makeBatchCall() ;
+                    }
+
                     animateProgressBar( 100, 2000 );
                 },
                 error: function(xhr, status, error) {
@@ -249,7 +273,7 @@ $terms = get_terms( array(
 
             // Add nonce to form data
             formData.nonce = '<?php echo esc_js( wp_create_nonce( 'wp_rest' ) ); ?>';
-            let path ='<?php echo esc_url_raw( rest_url( 'createReviews/v1/create_multiple_review' ) ); ?>';
+            let path ='<?php echo esc_url_raw( rest_url( 'createReviews/v1/get_product_ids' ) ); ?>';
             let type = 'POST';
             set_settings_data( formData, type , path );
         });
@@ -259,6 +283,61 @@ $terms = get_terms( array(
                 width: progress + '%'
             }, duration );
         }
+
+
+
+        //make per batch review
+
+        var currentBatch = 0;
+        function makeBatchCall( ) {
+
+            var formData = {
+                'numberOfReviewPerProduct': jQuery('#numberOfReviewPerProduct').val(),
+                'reviewStartDate': jQuery('#reviewStartDate').val(),
+                'reviewEndDate': jQuery('#reviewEndDate').val(),
+                'numberOfReviewRating': jQuery('#numberOfReviewRating').val(),
+            };
+
+            if ( currentBatch >= totalBatches ) {
+                $('#status').text('All batches completed.');
+                return;
+            }
+            let batchData = batches[currentBatch];
+
+            formData.productIds = batchData;
+
+            formData.nonce = '<?php echo esc_js( wp_create_nonce( 'wp_rest' ) ); ?>';
+            // batchData.formData = formData;
+            // console.log( batchData );
+            let path ='<?php echo esc_url_raw( rest_url( 'createReviews/v1/create_multiple_review_by_batch' ) ); ?>';
+            let type = 'POST';
+            jQuery.ajax({
+                type: type,
+                url: path,
+                contentType: 'application/json',
+                headers: {
+                    'X-WP-Nonce': formData.nonce
+                },
+                data: JSON.stringify( formData ),
+                success: function( response ) {
+                    $('#status').append('Batch ' + (currentBatch + 1) + ' completed.<br>');
+                    currentBatch++;
+                    makeBatchCall();
+                    // animateProgressBar( 100, 2000 );
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+        jQuery('body').on('click', '#createByBatch', function() {
+            /*batches = <?php echo esc_js( json_encode( $yourArrayOfData ) ); ?>;
+            totalBatches = batches.length;
+            currentBatch = 0;
+            makeBatchCall() ;*/
+
+        });
+
 
     });
 
