@@ -1,21 +1,4 @@
-<?php
-//echo 'Hello World';
-$taxonomy = 'product_cat'; // WooCommerce product category taxonomy
-$terms = get_terms( array(
-    'taxonomy' => $taxonomy,
-    'hide_empty' => false, // Set to false to include empty categories
-));
-
-$yourArrayOfData = array(
-    array( 20,21,22,23,24),
-    array( 25,26,27,28,29),
-    array( 30,31,32,33,40,41),
-    array(42,43,70,71,72),
-    array(79,94,95,96),
-);
-
-$total_batch = count( $yourArrayOfData );
-?>
+<?php ?>
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -135,41 +118,77 @@ $total_batch = count( $yourArrayOfData );
 <div class="reviewMasterContainer">
 
     <h1>Add Reviews</h1>
-    <h2>Multiple Reviews Added</h2>
-    <form method="post" action="" id="emailSettingsForm">
-        <label for="numberOfReviewPerProduct">Number Of Review Per Product:</label>
-        <input type="number" id="numberOfReviewPerProduct" name="numberOfReviewPerProduct" value="1"><br>
+    <div class="createMultipleReviews" id="createMultipleReviews">
+        <h2>Multiple Reviews Added</h2>
+        <form method="post" action="" id="createReviewForm">
+            <label for="numberOfReviewPerProduct">Number Of Review Per Product:</label>
+            <input type="number" id="numberOfReviewPerProduct" name="numberOfReviewPerProduct" value="1"><br>
 
-        <label for="numberOfReviewRating">Review Rating:</label>
-        <input type="text" id="numberOfReviewRating" name="numberOfReviewRating" placeholder="5 or 1 to 5"><br>
+            <label for="numberOfReviewRating">Review Rating:</label>
+            <input type="text" id="numberOfReviewRating" name="numberOfReviewRating" placeholder="5 or 1 to 5"><br>
 
-        <label for="reviewStartDate">Review Start Date</label>
-        <input type="date" id="reviewStartDate" name="reviewStartDate" value="<?php echo esc_attr( gmdate("Y-m-d") ); ?>"><br>
+            <label for="reviewStartDate">Review Start Date</label>
+            <input type="date" id="reviewStartDate" name="reviewStartDate" value="<?php echo esc_attr( gmdate("Y-m-d") ); ?>"><br>
 
-        <label for="reviewEndDate">Review End Date</label>
-        <input type="date" id="reviewEndDate" name="reviewEndDate" value="<?php echo esc_attr( gmdate("Y-m-d") )?>"><br>
+            <label for="reviewEndDate">Review End Date</label>
+            <input type="date" id="reviewEndDate" name="reviewEndDate" value="<?php echo esc_attr( gmdate("Y-m-d") )?>"><br>
 
-        <label for="categorySelector">Select Category:</label>
-        <ul id="selectedCategories" class="selectedCategories">
-            <li id="all_Categories" class="selected-category">All Categories</li>
-        </ul>
+            <label for="categorySelector">Select Category:</label>
+            <ul id="selectedCategories" class="selectedCategories">
+                <li id="all_Categories" class="selected-category">All Categories</li>
+            </ul>
 
 
-        <div class="categorySelectHolder" id="categorySelectHolder" style="display: none">
-            <select id="categorySelect" multiple>
-                <?php if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
-                foreach ( $terms as $term ) { ?>
-                <option id="<?php esc_attr_e( $term->slug, 'manage-review' );?>" value="<?php esc_attr_e( $term->slug, 'manage-review' );?>"><?php esc_attr_e( $term->name, 'manage-review' );?></option>
-                <?php } }?>
-            </select>
-        </div>
+            <div class="categorySelectHolder" id="categorySelectHolder" style="display: none">
+                <select id="categorySelect" multiple>
+                    <?php if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
+                        foreach ( $terms as $term ) { ?>
+                            <option id="<?php esc_attr_e( $term->slug, 'manage-review' );?>" value="<?php esc_attr_e( $term->slug, 'manage-review' );?>"><?php esc_attr_e( $term->name, 'manage-review' );?></option>
+                        <?php } }?>
+                </select>
+            </div>
 
-        <input type="submit" name="submit" value="Add Multiple reviews">
+            <input type="submit" name="submit" value="Add Multiple reviews">
 
-        <div id="testBatchData" class="testBatchData">
-            <div id="status"></div>
-        </div>
-    </form>
+            <div id="testBatchData" class="testBatchData">
+                <div id="status"></div>
+            </div>
+        </form>
+    </div>
+
+    <div class="createSingleReviews" id="createSingleReviews" style="display: none">
+        <h2>Multiple Reviews Added</h2>
+        <form method="post" action="" id="createReviewForm">
+            <label for="numberOfReviewPerProduct">Number Of Review </label>
+            <input type="number" id="numberOfReviewPerProduct" name="numberOfReviewPerProduct" value="1"><br>
+
+            <label for="numberOfReviewRating">Review Rating:</label>
+            <input type="text" id="numberOfReviewRating" name="numberOfReviewRating" placeholder="Between 1 to 5"><br>
+
+            <label for="reviewStartDate">Review Date</label>
+            <input type="date" id="reviewStartDate" name="reviewStartDate" value="<?php echo esc_attr( gmdate("Y-m-d") ); ?>"><br>
+
+            <label for="categorySelector">Product Title:</label>
+            <ul id="selectedCategories" class="selectedCategories">
+                <li id="all_Categories" class="selected-category">All Categories</li>
+            </ul>
+            <div class="categorySelectHolder" id="categorySelectHolder" style="display: none">
+                <select id="categorySelect" multiple>
+                    <?php if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
+                        foreach ( $terms as $term ) { ?>
+                            <option id="<?php esc_attr_e( $term->slug, 'manage-review' );?>" value="<?php esc_attr_e( $term->slug, 'manage-review' );?>"><?php esc_attr_e( $term->name, 'manage-review' );?></option>
+                        <?php } }?>
+                </select>
+            </div>
+
+            <input type="submit" name="submit" value="Add Multiple reviews">
+
+            <div id="testBatchData" class="testBatchData">
+                <div id="status"></div>
+            </div>
+        </form>
+    </div>
+
 
     <div class="progress" id="progressHolder" style="display: none">
         <div id="progress-bar" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
@@ -204,7 +223,7 @@ $total_batch = count( $yourArrayOfData );
         });
 
         let is_category_shows = 0;
-        jQuery('#emailSettingsForm').on('click', '#selectedCategories', function() {
+        jQuery('#createReviewForm').on('click', '#selectedCategories', function() {
             if( is_category_shows === 0){
                 is_category_shows ++;
                 jQuery("#categorySelectHolder").show();
@@ -257,7 +276,7 @@ $total_batch = count( $yourArrayOfData );
             });
         }
 
-        jQuery('#emailSettingsForm').submit(function(e) {
+        jQuery('#createReviewForm').submit(function(e) {
             e.preventDefault(); // Prevent form submission
             per_complt_start = 10;
             jQuery('#status').text(' Reviews Are Generating... ').css({
@@ -307,7 +326,6 @@ $total_batch = count( $yourArrayOfData );
             };
             if ( currentBatch >= totalBatches ) {
                 review_status_bar_success_message_hide();
-
                 return;
             }
             let batchData = batches[currentBatch];
