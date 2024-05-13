@@ -124,6 +124,12 @@ $total_batch = count( $yourArrayOfData );
         width: 300px;
         padding: 10px;
     }
+
+    .testBatchData{
+        text-align: center;
+        padding: 10px 10px 0px 100px;
+        font-size: 15px;
+    }
 </style>
 
 <div class="reviewMasterContainer">
@@ -159,6 +165,10 @@ $total_batch = count( $yourArrayOfData );
         </div>
 
         <input type="submit" name="submit" value="Add Multiple reviews">
+
+        <div id="testBatchData" class="testBatchData">
+            <div id="status"></div>
+        </div>
     </form>
 
     <div class="progress" id="progressHolder" style="display: none">
@@ -167,10 +177,7 @@ $total_batch = count( $yourArrayOfData );
 </div>
 
 
-<div id="testBatchData" class="testBatchData">
-    <div class="createByBatch" id="createByBatch" style="cursor: pointer">Create By batch</div>
-    <div id="status"></div>
-</div>
+
 
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -180,7 +187,7 @@ $total_batch = count( $yourArrayOfData );
         var selectedCategories = [];
         jQuery('#categorySelect').on('change', function() {
             jQuery('#categorySelect option:selected').each(function() {
-                var $this = $(this);
+                var $this = jQuery(this);
                 if (!$this.prop('disabled')) {
                     selectedCategories.push($this.text());
                     $this.prop('disabled', true); // Disable the option
@@ -190,14 +197,14 @@ $total_batch = count( $yourArrayOfData );
                 var removeButton = jQuery('<button>').addClass('remove-button').html('&times;');
                 var div = jQuery('<li id=selected-'+index+'>').addClass('selected-category').text(value);
                 div.append(removeButton);
-                $('#selectedCategories').append(div);
+                jQuery('#selectedCategories').append(div);
 
                 jQuery("#all_Categories").remove();
             });
         });
 
         let is_category_shows = 0;
-        $('#emailSettingsForm').on('click', '#selectedCategories', function() {
+        jQuery('#emailSettingsForm').on('click', '#selectedCategories', function() {
             if( is_category_shows === 0){
                 is_category_shows ++;
                 jQuery("#categorySelectHolder").show();
@@ -208,15 +215,15 @@ $total_batch = count( $yourArrayOfData );
 
         });
 
-        $('#selectedCategories').on('click', '.remove-button', function() {
-            let text = $(this).parent().text().trim('x');
+        jQuery('#selectedCategories').on('click', '.remove-button', function() {
+            let text = jQuery(this).parent().text().trim('x');
             text = text.replace('×', '');
-            $('#categorySelect option').filter(function() {
-                return $(this).text().trim() === text;
+            jQuery('#categorySelect option').filter(function() {
+                return jQuery(this).text().trim() === text;
             }).prop('disabled', false); // Enable the option
-            $(this).parent().remove(); // Remove the selected category div
+            jQuery(this).parent().remove(); // Remove the selected category div
 
-            let liExists = $('#selectedCategories').find('li').length;
+            let liExists = jQuery('#selectedCategories').find('li').length;
             if( liExists === 0 ){
                 jQuery("#selectedCategories").append( '<li id="all_Categories" class="selected-category">All Categories</li>' );
                 jQuery("#categorySelectHolder").hide();
@@ -226,7 +233,7 @@ $total_batch = count( $yourArrayOfData );
 
         function set_settings_data( formData, type, path ){
             jQuery("#progressHolder").show();
-            animateProgressBar( 10, 2000 );
+            animateProgressBar( per_complt_start, 1000 );
             jQuery.ajax({
                 type: type,
                 url: path,
@@ -235,16 +242,14 @@ $total_batch = count( $yourArrayOfData );
                     'X-WP-Nonce': formData.nonce
                 },
                 data: JSON.stringify(formData),
-                success: function(response) {
+                success: function( response ) {
                     batches = response;
-                    // console.log(response);
                     totalBatches = batches.length;
+                    per_complt = Math.floor( 90/totalBatches );
                     if( totalBatches > 0 ){
                         currentBatch = 0;
                         makeBatchCall() ;
                     }
-
-                    animateProgressBar( 100, 2000 );
                 },
                 error: function(xhr, status, error) {
                     console.error(xhr.responseText);
@@ -254,7 +259,11 @@ $total_batch = count( $yourArrayOfData );
 
         jQuery('#emailSettingsForm').submit(function(e) {
             e.preventDefault(); // Prevent form submission
-
+            per_complt_start = 10;
+            jQuery('#status').text(' Reviews Are Generating... ').css({
+                'color': 'blue', // Set text color to blue
+                'font-weight': 'bold' // Set font weight to bold
+            });
             jQuery("#categorySelectHolder").hide();
 
             let selectedCategoryArray = [];
@@ -279,7 +288,7 @@ $total_batch = count( $yourArrayOfData );
         });
 
         function animateProgressBar( progress, duration ) {
-            $('.progress-bar').animate({
+            jQuery('.progress-bar').animate({
                 width: progress + '%'
             }, duration );
         }
@@ -290,25 +299,21 @@ $total_batch = count( $yourArrayOfData );
 
         var currentBatch = 0;
         function makeBatchCall( ) {
-
             var formData = {
                 'numberOfReviewPerProduct': jQuery('#numberOfReviewPerProduct').val(),
                 'reviewStartDate': jQuery('#reviewStartDate').val(),
                 'reviewEndDate': jQuery('#reviewEndDate').val(),
                 'numberOfReviewRating': jQuery('#numberOfReviewRating').val(),
             };
-
             if ( currentBatch >= totalBatches ) {
-                $('#status').text('All batches completed.');
+                review_status_bar_success_message_hide();
+
                 return;
             }
             let batchData = batches[currentBatch];
-
             formData.productIds = batchData;
-
             formData.nonce = '<?php echo esc_js( wp_create_nonce( 'wp_rest' ) ); ?>';
             // batchData.formData = formData;
-            // console.log( batchData );
             let path ='<?php echo esc_url_raw( rest_url( 'createReviews/v1/create_multiple_review_by_batch' ) ); ?>';
             let type = 'POST';
             jQuery.ajax({
@@ -320,24 +325,26 @@ $total_batch = count( $yourArrayOfData );
                 },
                 data: JSON.stringify( formData ),
                 success: function( response ) {
-                    $('#status').append('Batch ' + (currentBatch + 1) + ' completed.<br>');
+                    per_complt_start = per_complt_start + per_complt;
+                    animateProgressBar( per_complt_start, 1000 );
                     currentBatch++;
                     makeBatchCall();
-                    // animateProgressBar( 100, 2000 );
                 },
                 error: function(xhr, status, error) {
                     console.error(xhr.responseText);
                 }
             });
         }
-        jQuery('body').on('click', '#createByBatch', function() {
-            /*batches = <?php echo esc_js( json_encode( $yourArrayOfData ) ); ?>;
-            totalBatches = batches.length;
-            currentBatch = 0;
-            makeBatchCall() ;*/
 
-        });
-
+        function review_status_bar_success_message_hide(){
+            per_complt_start = 0;
+            animateProgressBar( per_complt_start, 1000 );
+            jQuery("#progressHolder").hide();
+            jQuery('#status').text(' Reviews Are Successfully Created ').css({
+                'color': 'green', // Set text color to blue
+                'font-weight': 'bold' // Set font weight to bold
+            });
+        }
 
     });
 

@@ -6,7 +6,7 @@ class MakeProductsbatch
 {
     private $max_generate_review_per_batch;
     function __construct(){
-        $this->max_generate_review_per_batch = 2000;
+        $this->max_generate_review_per_batch = 1000;
     }
 
     public function make_batch_product( $product_ids, $review_per_product, $total_products ){
