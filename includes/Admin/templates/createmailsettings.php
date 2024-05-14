@@ -1,4 +1,10 @@
-<?php ?>
+<?php
+$taxonomy = 'product_cat'; // WooCommerce product category taxonomy
+$terms = get_terms( array(
+    'taxonomy' => $taxonomy,
+    'hide_empty' => false, // Set to false to include empty categories
+));
+?>
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -107,20 +113,95 @@
         width: 300px;
         padding: 10px;
     }
-
     .testBatchData{
         text-align: center;
         padding: 10px 10px 0px 100px;
         font-size: 15px;
     }
+
+
+    .titleSearchHolder{
+        cursor: pointer;
+        display: flex;
+        align-items: flex-start;
+        position: relative;
+        padding: 2px;
+        width: 100%;
+        border: 1px solid #ccc;
+    }
+    .removeSelectedItems{
+        width: 25px;
+        text-align: center;
+        margin-top: 14px;
+    }
+    .titleSearchContainer{
+        width: calc( 100% - 25px );
+    }
+    #productTitleSearchBox{
+        background: none;
+        border: none;
+        outline: none;
+        font-size: 1em;
+        margin: 2px;
+        padding: 4px 0px;
+        vertical-align: middle;
+    }
+    #productTitleSearchBox:focus{
+        box-shadow: 0 0 0 0;
+    }
+    .searchResultContainer{
+        display: flex;
+    }
+    .productTitleHolder{
+        padding: 5px 2px 5px 5px;
+        margin: 5px;
+        border: 1px solid #d9d1d1;
+        border-radius: 3px;
+    }
+    .removeSingleProduct{
+        margin-left: 5px;
+        cursor: pointer;
+        padding: 5px;
+        background-color: #666666;
+        color: #ffff;
+    }
+    .productDropDownMenu{
+        width: 100%;
+        /*border-color: #b3b3b3 #ccc #d9d9d9;*/
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
+        background: #fff;
+        border: 1px solid #ccc;
+        margin-top: -1px;
+        box-sizing: border-box;
+        overflow: auto;
+        position: absolute;
+        max-height: 200px;
+        z-index: 10;
+    }
+    .productDropDownMenu .option-wrapper {
+        cursor: pointer;
+        outline: none;
+    }
+
+    .productDropDownMenu .option-wrapper .productTitleSelect {
+        color: #666;
+        cursor: pointer;
+        padding: 8px 10px;
+    }
+
+    .productDropDownMenu .option-wrapper .productTitleSelect:hover {
+        background-color: #b2d2ee;
+    }
+
 </style>
 
 <div class="reviewMasterContainer">
 
     <h1>Add Reviews</h1>
-    <div class="createMultipleReviews" id="createMultipleReviews">
+    <div class="createMultipleReviews" id="createMultipleReviews" style="display: none">
         <h2>Multiple Reviews Added</h2>
-        <form method="post" action="" id="createReviewForm">
+        <form method="post" action="" id="createReviewForm" style="display: none">
             <label for="numberOfReviewPerProduct">Number Of Review Per Product:</label>
             <input type="number" id="numberOfReviewPerProduct" name="numberOfReviewPerProduct" value="1"><br>
 
@@ -156,8 +237,8 @@
         </form>
     </div>
 
-    <div class="createSingleReviews" id="createSingleReviews" style="display: none">
-        <h2>Multiple Reviews Added</h2>
+    <div class="createSingleReviews" id="createSingleReviews" style="display: block">
+        <h2>Single Reviews Added</h2>
         <form method="post" action="" id="createReviewForm">
             <label for="numberOfReviewPerProduct">Number Of Review </label>
             <input type="number" id="numberOfReviewPerProduct" name="numberOfReviewPerProduct" value="1"><br>
@@ -168,17 +249,19 @@
             <label for="reviewStartDate">Review Date</label>
             <input type="date" id="reviewStartDate" name="reviewStartDate" value="<?php echo esc_attr( gmdate("Y-m-d") ); ?>"><br>
 
-            <label for="categorySelector">Product Title:</label>
-            <ul id="selectedCategories" class="selectedCategories">
-                <li id="all_Categories" class="selected-category">All Categories</li>
-            </ul>
-            <div class="categorySelectHolder" id="categorySelectHolder" style="display: none">
-                <select id="categorySelect" multiple>
-                    <?php if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
-                        foreach ( $terms as $term ) { ?>
-                            <option id="<?php esc_attr_e( $term->slug, 'manage-review' );?>" value="<?php esc_attr_e( $term->slug, 'manage-review' );?>"><?php esc_attr_e( $term->name, 'manage-review' );?></option>
-                        <?php } }?>
-                </select>
+            <div class="titleSearchHolder">
+                <div class="titleSearchContainer">
+                    <div class="searchResultContainer" id="searchResultContainer">
+                        <div class="productTitleHolder"><span class="productTitle">This is titl</span><span class="removeSingleProduct">x</span></div>
+                        <div class="productTitleHolder"><span class="productTitle">This new a is titl</span><span class="removeSingleProduct">x</span></div>
+                        <div class="productTitleHolder"><span class="productTitle">Way od This is titl</span><span class="removeSingleProduct">x</span></div>
+                    </div>
+                    <input type="text" class="productTitleSearchBox" id="productTitleSearchBox" placeholder="Type to search...">
+                    <div class="productDropDownMenu" id="productDropDownMenu">
+                        <div class="option-wrapper" id="productTitleWrapper"></div>
+                    </div>
+                </div>
+                <div class="removeSelectedItems">X</div>
             </div>
 
             <input type="submit" name="submit" value="Add Multiple reviews">
@@ -195,13 +278,57 @@
     </div>
 </div>
 
-
-
-
-
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     jQuery(document).ready(function() {
+
+        function display_search_data( productTitles ) {
+            console.log( productTitles );
+            jQuery("#productTitleWrapper").children().remove();
+            let length = productTitles.length;
+            let titleText = ''; // Use a string to accumulate HTML content
+            for (let i = 0; i < length; i++) {
+                titleText += '<div class="productTitleSelect" id="'+productTitles[i]['id']+'">\
+                    <span id="productId">' + productTitles[i]['id'] + '::' + productTitles[i]['title'] + '</span>\
+                </div>';
+            }
+
+            return titleText;
+        }
+        //productTitleSearchBox
+        $('#productTitleSearchBox').on('input', function() {
+            // let formData = {};
+            let search_term = $(this).val();
+            let nonce = '<?php echo esc_js( wp_create_nonce( 'wp_rest' ) ); ?>';
+            let setUrl ='<?php echo esc_url_raw( rest_url( 'createReviews/v1/search/search_by_text' ) ); ?>';
+            let type = 'GET';
+            // console.log( search_term );
+            if( search_term.length === 3 ) { // Trigger search when input length is more than 2
+                jQuery("#productTitleWrapper").show();
+                jQuery.ajax({
+                    type: type,
+                    url: setUrl,
+                    contentType: 'application/json',
+                    headers: {
+                        'X-WP-Nonce': nonce
+                    },
+                    data: {
+                        search_term: search_term,
+                        limit: 10 // Adjust the limit as needed
+                    },
+                    success: function( response ) {
+                        let searchData = display_search_data( response );
+                        jQuery("#productTitleWrapper").append( searchData )
+                        // console.log( response );
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(xhr.responseText);
+                    }
+                });
+            }else if( search_term.length === 0 ){
+                jQuery("#productTitleWrapper").hide();
+            }
+        });
 
         var selectedCategories = [];
         jQuery('#categorySelect').on('change', function() {

@@ -2,6 +2,8 @@
 namespace Manage\Review;
 
 use Manage\Review\API\CreateMailSettings;
+use Manage\Review\API\GetProductTitleBySearch;
+
 class Api
 {
     function __construct(){
@@ -10,7 +12,9 @@ class Api
 
     public function register_api(){
         $tasktodo = new CreateMailSettings();
+        $bysearch = new GetProductTitleBySearch();
         $tasktodo->register_routes();
+        $bysearch->register_routes();
     }
 
 }

@@ -69,8 +69,7 @@ class CreateMailSettings extends WP_REST_Controller
     /**
      * Register REST API routes.
      */
-    public function register_routes()
-    {
+    public function register_routes(){
         register_rest_route(
             $this->namespace,
             '/create_multiple_review_by_batch',
@@ -92,6 +91,7 @@ class CreateMailSettings extends WP_REST_Controller
                 'args' => array($this->get_collection_params()),
             )
         );
+
     }
 
     /**
@@ -140,7 +140,7 @@ class CreateMailSettings extends WP_REST_Controller
      *
      * @return \WP_REST_Response|\WP_Error Response object or WP_Error.
      */
-    public function generate_review_from_settings($request)
+    public function generate_review_from_settings( $request )
     {
         // Verify nonce
         $nonce = $request->get_header('X-WP-Nonce');
@@ -178,6 +178,7 @@ class CreateMailSettings extends WP_REST_Controller
      *
      * @return bool Whether the request has permission.
      */
+
     public function get_item_permissions_check($request)
     {
         if (current_user_can('manage_options')) {
