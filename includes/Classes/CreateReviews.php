@@ -60,11 +60,11 @@ class CreateReviews
         if (count($product_ids) > 0) {
             foreach ($product_ids as $post_id) {
                 for ($i = 0; $i < $review_limit_per_product; $i++) {
-                    if (is_array($comment_contents)) {
+                    if ( is_array($comment_contents ) ) {
                         $comment_content_key = array_rand($comment_contents);
                         $comment_content = $comment_contents[$comment_content_key];
                     } else {
-                        $comment_content = ' This is from fromt end';
+                        $comment_content = $comment_contents;
                     }
 
                     $review_rating = is_array($rating_ary) ? wp_rand($rating_ary[0], $rating_ary[1]) : $rating_ary;

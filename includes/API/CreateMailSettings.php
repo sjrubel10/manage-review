@@ -92,6 +92,17 @@ class CreateMailSettings extends WP_REST_Controller
             )
         );
 
+        register_rest_route(
+            $this->namespace,
+            '/generate_single_review',
+            array(
+                'methods' => WP_REST_Server::CREATABLE,
+                'callback' => array($this, 'generate_single_review'),
+                'permission_callback' => array($this, 'get_item_permissions_check'),
+                'args' => array($this->get_collection_params()),
+            )
+        );
+
     }
 
     /**
@@ -101,8 +112,7 @@ class CreateMailSettings extends WP_REST_Controller
      *
      * @return \WP_REST_Response|\WP_Error Response object or WP_Error.
      */
-    public function get_product_ids($request)
-    {
+    public function get_product_ids( $request ){
         // Verify nonce
         $nonce = $request->get_header('X-WP-Nonce');
         if (!wp_verify_nonce($nonce, 'wp_rest')) {
@@ -130,7 +140,6 @@ class CreateMailSettings extends WP_REST_Controller
         $total_products = count($product_ids);
         $batch_product_ids = $this->make_batch_product->make_batch_product($product_ids, $review_per_product, $total_products);
 
-//        error_log( print_r( ['$batch_product_ids'=>new WP_REST_Response( $batch_product_ids, 200 )], true ) );
         return new WP_REST_Response( $batch_product_ids, 200 );
     }
     /**
@@ -140,8 +149,30 @@ class CreateMailSettings extends WP_REST_Controller
      *
      * @return \WP_REST_Response|\WP_Error Response object or WP_Error.
      */
-    public function generate_review_from_settings( $request )
-    {
+    public function generate_single_review( $request ){
+        $nonce = $request->get_header('X-WP-Nonce');
+        if (!wp_verify_nonce($nonce, 'wp_rest')) {
+            return new WP_Error('invalid_nonce', 'Invalid nonce.', array('status' => 403));
+        }
+
+        // Retrieve form data
+        $form_data = $request->get_json_params();
+        unset( $form_data['nonce'] );
+
+        $product_ids = $form_data['productIds'];
+
+        // Extract review settings
+        $review_limit_per_product = sanitize_text_field( $form_data['numberOfSingleReviewPerProduct'] );
+        $date_start = sanitize_text_field( $form_data['singleReviewStartDate'] );
+        $review_rating = sanitize_text_field( $form_data['numberOfSingleReviewRating'] );
+        $comment_context = sanitize_text_field( $form_data['commentContextForReview'] );
+
+        // Generate reviews
+        $is_inserted = $this->create_reviews->generate_reviews_by_ids( $product_ids, $review_limit_per_product, $date_start, $date_start, $comment_context, $review_rating, $this->create_reviews );
+
+        return new WP_REST_Response( $is_inserted, 200 );
+    }
+    public function generate_review_from_settings( $request ){
         // Verify nonce
         $nonce = $request->get_header('X-WP-Nonce');
         if (!wp_verify_nonce($nonce, 'wp_rest')) {

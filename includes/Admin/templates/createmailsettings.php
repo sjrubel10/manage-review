@@ -128,6 +128,7 @@ $terms = get_terms( array(
         padding: 2px;
         width: 100%;
         border: 1px solid #ccc;
+        background-color: #FFFFFF;
     }
     .removeSelectedItems{
         width: 25px;
@@ -135,6 +136,7 @@ $terms = get_terms( array(
         margin-top: 14px;
     }
     .titleSearchContainer{
+        display: block;
         width: calc( 100% - 25px );
     }
     #productTitleSearchBox{
@@ -145,6 +147,7 @@ $terms = get_terms( array(
         margin: 2px;
         padding: 4px 0px;
         vertical-align: middle;
+        width: 190px;
     }
     #productTitleSearchBox:focus{
         box-shadow: 0 0 0 0;
@@ -163,11 +166,12 @@ $terms = get_terms( array(
         margin-left: 5px;
         cursor: pointer;
         padding: 5px;
-        background-color: #666666;
-        color: #ffff;
+        background-color: #ddd4d4;
+        color: #cd2424;
     }
     .productDropDownMenu{
         width: 100%;
+        display: none;
         /*border-color: #b3b3b3 #ccc #d9d9d9;*/
         border-bottom-left-radius: 4px;
         border-bottom-right-radius: 4px;
@@ -200,9 +204,9 @@ $terms = get_terms( array(
 <div class="reviewMasterContainer">
 
     <h1>Add Reviews</h1>
-    <div class="createMultipleReviews" id="createMultipleReviews" style="display: none">
+    <div class="createMultipleReviews" id="createMultipleReviews" style="display: block">
         <h2>Multiple Reviews Added</h2>
-        <form method="post" action="" id="createReviewForm" style="display: none">
+        <form method="post" action="" id="createReviewForm">
             <label for="numberOfReviewPerProduct">Number Of Review Per Product:</label>
             <input type="number" id="numberOfReviewPerProduct" name="numberOfReviewPerProduct" value="1"><br>
 
@@ -242,19 +246,21 @@ $terms = get_terms( array(
         <h2>Single Reviews Added</h2>
         <form method="post" action="" id="createSingleReviewForm">
             <label for="numberOfReviewPerProduct">Number Of Review </label>
-            <input type="number" id="numberOfReviewPerProduct" name="numberOfReviewPerProduct" value="1"><br>
+            <input type="number" id="numberOfSingleReviewPerProduct" name="numberOfSingleReviewPerProduct" value="1"><br>
 
             <label for="numberOfReviewRating">Review Rating:</label>
-            <input type="text" id="numberOfReviewRating" name="numberOfReviewRating" placeholder="Between 1 to 5"><br>
+            <input type="text" id="numberOfSingleReviewRating" name="numberOfSingleReviewRating" placeholder="Between 1 to 5"><br>
 
             <label for="reviewStartDate">Review Date</label>
-            <input type="date" id="reviewStartDate" name="reviewStartDate" value="<?php echo esc_attr( gmdate("Y-m-d") ); ?>"><br>
+            <input type="date" id="singleReviewStartDate" name="singleReviewStartDate" value="<?php echo esc_attr( gmdate("Y-m-d") ); ?>"><br>
 
+            <label for="numberOfReviewRating">Comment Context:</label>
+            <input type="text" id="commentContextForReview" name="commentContextForReview" placeholder="Write your comments.."><br>
 
             <div class="titleSearchHolder">
                 <div class="titleSearchContainer">
                     <div class="searchResultContainer" id="searchResultContainer"></div>
-                    <input type="text" class="productTitleSearchBox" id="productTitleSearchBox" placeholder="Type to search...">
+                    <input type="text" class="productTitleSearchBox" id="productTitleSearchBox" placeholder="Product Name Search...">
                     <div class="productDropDownMenu" id="productDropDownMenu">
                         <div class="option-wrapper" id="productTitleWrapper"></div>
                     </div>
@@ -262,8 +268,7 @@ $terms = get_terms( array(
                 <div class="removeSelectedItems">X</div>
             </div>
 
-            <input type="submit" name="submit" value="Add Multiple reviews">
-
+            <input type="submit" name="submit" value="Add Single reviews">
             <div id="testBatchData" class="testBatchData">
                 <div id="status"></div>
             </div>
@@ -291,6 +296,27 @@ $terms = get_terms( array(
             }
 
             return titleText;
+        }
+        function get_search_data_and_display( setUrl, type, search_term, nonce){
+            jQuery.ajax({
+                type: type,
+                url: setUrl,
+                contentType: 'application/json',
+                headers: {
+                    'X-WP-Nonce': nonce
+                },
+                data: {
+                    search_term: search_term,
+                    limit: 10 // Adjust the limit as needed
+                },
+                success: function( response ) {
+                    let searchData = display_search_data( response );
+                    jQuery("#productTitleWrapper").append( searchData )
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
         }
         jQuery('#createSingleReviewForm').on('click', '.removeSingleProduct', function() {
             let removeProductClickedID = jQuery(this).attr('id');
@@ -322,6 +348,7 @@ $terms = get_terms( array(
             let type = 'GET';
             if( search_term.length > 0 ) {
                 jQuery("#productTitleWrapper").show();
+                jQuery("#productDropDownMenu").show();
             }
             if( search_term.length === 3 ) { // Trigger search when input length is more than 2
                 get_search_data_and_display( setUrl, type, search_term, nonce);
@@ -329,32 +356,6 @@ $terms = get_terms( array(
                 jQuery("#productTitleWrapper").hide();
             }
         });
-        function get_search_data_and_display( setUrl, type, search_term, nonce){
-            jQuery.ajax({
-                type: type,
-                url: setUrl,
-                contentType: 'application/json',
-                headers: {
-                    'X-WP-Nonce': nonce
-                },
-                data: {
-                    search_term: search_term,
-                    limit: 10 // Adjust the limit as needed
-                },
-                success: function( response ) {
-                    let searchData = display_search_data( response );
-                    jQuery("#productTitleWrapper").append( searchData )
-                    // console.log( response );
-                },
-                error: function(xhr, status, error) {
-                    console.error(xhr.responseText);
-                }
-            });
-        }
-
-
-
-
 
         var selectedCategories = [];
         jQuery('#categorySelect').on('change', function() {
@@ -402,7 +403,6 @@ $terms = get_terms( array(
             }
         });
 
-
         function set_settings_data( formData, type, path ){
             jQuery("#progressHolder").show();
             animateProgressBar( per_complt_start, 1000 );
@@ -416,11 +416,19 @@ $terms = get_terms( array(
                 data: JSON.stringify(formData),
                 success: function( response ) {
                     batches = response;
-                    totalBatches = batches.length;
-                    per_complt = Math.floor( 90/totalBatches );
+                    console.log( batches );
+                    if (Array.isArray( batches )) {
+                        totalBatches = batches.length;
+                        per_complt = Math.floor( 90/totalBatches );
+                    }else{
+                        totalBatches = 0;
+                    }
+
                     if( totalBatches > 0 ){
                         currentBatch = 0;
                         makeBatchCall() ;
+                    }else{
+                        animateProgressBar( 100, 1000 );
                     }
                 },
                 error: function(xhr, status, error) {
@@ -428,6 +436,28 @@ $terms = get_terms( array(
                 }
             });
         }
+
+        jQuery('#createSingleReviewForm').submit(function(e) {
+            e.preventDefault();
+            per_complt_start = 10;
+            let productsIds = []; // Array to store IDs
+            $('.productTitle').each(function() {
+                let id = $(this).attr( 'id' ); // Get ID of each element
+                productsIds.push( id ); // Push ID into the array
+            });
+            let get_formData = {
+                'numberOfSingleReviewPerProduct': jQuery('#numberOfSingleReviewPerProduct').val(),
+                'numberOfSingleReviewRating': jQuery('#numberOfSingleReviewRating').val(),
+                'singleReviewStartDate': jQuery('#singleReviewStartDate').val(),
+                'commentContextForReview': jQuery('#commentContextForReview').val(),
+                'productIds': productsIds,
+            };
+            get_formData.nonce = '<?php echo esc_js( wp_create_nonce( 'wp_rest' ) ); ?>';
+            let path ='<?php echo esc_url_raw( rest_url( 'createReviews/v1/generate_single_review' ) ); ?>';
+            let type = 'POST';
+            set_settings_data( get_formData, type , path );
+            // console.log( get_formData ); // Output the array of IDs
+        });
 
         jQuery('#createReviewForm').submit(function(e) {
             e.preventDefault(); // Prevent form submission
@@ -465,10 +495,7 @@ $terms = get_terms( array(
             }, duration );
         }
 
-
-
         //make per batch review
-
         var currentBatch = 0;
         function makeBatchCall( ) {
             var formData = {
