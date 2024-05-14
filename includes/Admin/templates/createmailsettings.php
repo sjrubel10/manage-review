@@ -150,13 +150,14 @@ $terms = get_terms( array(
         box-shadow: 0 0 0 0;
     }
     .searchResultContainer{
-        display: flex;
+        display: block;
     }
     .productTitleHolder{
         padding: 5px 2px 5px 5px;
         margin: 5px;
         border: 1px solid #d9d1d1;
         border-radius: 3px;
+        float: left;
     }
     .removeSingleProduct{
         margin-left: 5px;
@@ -239,7 +240,7 @@ $terms = get_terms( array(
 
     <div class="createSingleReviews" id="createSingleReviews" style="display: block">
         <h2>Single Reviews Added</h2>
-        <form method="post" action="" id="createReviewForm">
+        <form method="post" action="" id="createSingleReviewForm">
             <label for="numberOfReviewPerProduct">Number Of Review </label>
             <input type="number" id="numberOfReviewPerProduct" name="numberOfReviewPerProduct" value="1"><br>
 
@@ -249,13 +250,10 @@ $terms = get_terms( array(
             <label for="reviewStartDate">Review Date</label>
             <input type="date" id="reviewStartDate" name="reviewStartDate" value="<?php echo esc_attr( gmdate("Y-m-d") ); ?>"><br>
 
+
             <div class="titleSearchHolder">
                 <div class="titleSearchContainer">
-                    <div class="searchResultContainer" id="searchResultContainer">
-                        <div class="productTitleHolder"><span class="productTitle">This is titl</span><span class="removeSingleProduct">x</span></div>
-                        <div class="productTitleHolder"><span class="productTitle">This new a is titl</span><span class="removeSingleProduct">x</span></div>
-                        <div class="productTitleHolder"><span class="productTitle">Way od This is titl</span><span class="removeSingleProduct">x</span></div>
-                    </div>
+                    <div class="searchResultContainer" id="searchResultContainer"></div>
                     <input type="text" class="productTitleSearchBox" id="productTitleSearchBox" placeholder="Type to search...">
                     <div class="productDropDownMenu" id="productDropDownMenu">
                         <div class="option-wrapper" id="productTitleWrapper"></div>
@@ -283,52 +281,80 @@ $terms = get_terms( array(
     jQuery(document).ready(function() {
 
         function display_search_data( productTitles ) {
-            console.log( productTitles );
             jQuery("#productTitleWrapper").children().remove();
             let length = productTitles.length;
             let titleText = ''; // Use a string to accumulate HTML content
             for (let i = 0; i < length; i++) {
-                titleText += '<div class="productTitleSelect" id="'+productTitles[i]['id']+'">\
-                    <span id="productId">' + productTitles[i]['id'] + '::' + productTitles[i]['title'] + '</span>\
-                </div>';
+                titleText += '<div class="productTitleSelect" id="productTitleSelect-'+productTitles[i]['id']+'">\
+                                  <span class="productTitleClicked" id="productTitle-'+productTitles[i]['id']+'">' + productTitles[i]['id'] + '::' + productTitles[i]['title'] + '</span>\
+                              </div>';
             }
 
             return titleText;
         }
+        jQuery('#createSingleReviewForm').on('click', '.removeSingleProduct', function() {
+            let removeProductClickedID = jQuery(this).attr('id');
+            let removeProductID = removeProductClickedID.replace('removeSingleProduct-', '').trim();
+            let selectedProductId = 'productTitleSelect-'+removeProductID;
+            let parentDivID = 'productTitleHolder-'+removeProductID;
+            jQuery("#"+parentDivID).remove();
+            jQuery("#"+selectedProductId).show();
+        });
+        jQuery('#createSingleReviewForm').on('click', '.productTitleSelect', function() {
+            let clickedId = jQuery(this).attr('id');
+            let productID = clickedId.replace('productTitleSelect-', '').trim();
+            let productTitle = jQuery(this).children().text();
+            let selectedProductTitle = '';
+            if( productTitle.length > 0 ){
+                 selectedProductTitle = '<div class="productTitleHolder" id="productTitleHolder-'+productID+'">\
+                                                <span class="productTitle" id="'+productID+'">'+productTitle+'</span>\
+                                                <span class="removeSingleProduct" id="removeSingleProduct-'+productID+'">x</span>\
+                                            </div>';
+                jQuery("#searchResultContainer").append( selectedProductTitle );
+                jQuery('#'+clickedId).hide();
+            }
+        });
         //productTitleSearchBox
         $('#productTitleSearchBox').on('input', function() {
-            // let formData = {};
-            let search_term = $(this).val();
+            let search_term = jQuery(this).val();
             let nonce = '<?php echo esc_js( wp_create_nonce( 'wp_rest' ) ); ?>';
             let setUrl ='<?php echo esc_url_raw( rest_url( 'createReviews/v1/search/search_by_text' ) ); ?>';
             let type = 'GET';
-            // console.log( search_term );
-            if( search_term.length === 3 ) { // Trigger search when input length is more than 2
+            if( search_term.length > 0 ) {
                 jQuery("#productTitleWrapper").show();
-                jQuery.ajax({
-                    type: type,
-                    url: setUrl,
-                    contentType: 'application/json',
-                    headers: {
-                        'X-WP-Nonce': nonce
-                    },
-                    data: {
-                        search_term: search_term,
-                        limit: 10 // Adjust the limit as needed
-                    },
-                    success: function( response ) {
-                        let searchData = display_search_data( response );
-                        jQuery("#productTitleWrapper").append( searchData )
-                        // console.log( response );
-                    },
-                    error: function(xhr, status, error) {
-                        console.error(xhr.responseText);
-                    }
-                });
+            }
+            if( search_term.length === 3 ) { // Trigger search when input length is more than 2
+                get_search_data_and_display( setUrl, type, search_term, nonce);
             }else if( search_term.length === 0 ){
                 jQuery("#productTitleWrapper").hide();
             }
         });
+        function get_search_data_and_display( setUrl, type, search_term, nonce){
+            jQuery.ajax({
+                type: type,
+                url: setUrl,
+                contentType: 'application/json',
+                headers: {
+                    'X-WP-Nonce': nonce
+                },
+                data: {
+                    search_term: search_term,
+                    limit: 10 // Adjust the limit as needed
+                },
+                success: function( response ) {
+                    let searchData = display_search_data( response );
+                    jQuery("#productTitleWrapper").append( searchData )
+                    // console.log( response );
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+
+
+
+
 
         var selectedCategories = [];
         jQuery('#categorySelect').on('change', function() {
