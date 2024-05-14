@@ -203,38 +203,39 @@ $terms = get_terms( array(
 
 <div class="reviewMasterContainer">
 
-    <h1>Add Reviews</h1>
-    <div class="createMultipleReviews" id="createMultipleReviews" style="display: block">
-        <h2>Multiple Reviews Added</h2>
+    <h1><?php esc_html_e('Add Reviews', 'review-master'); ?></h1>
+
+    <div class="createMultipleReviews" id="createMultipleReviews">
+        <h2><?php esc_html_e('Multiple Reviews Added', 'review-master'); ?></h2>
         <form method="post" action="" id="createReviewForm">
-            <label for="numberOfReviewPerProduct">Number Of Review Per Product:</label>
+            <label for="numberOfReviewPerProduct"><?php esc_html_e('Number Of Review Per Product:', 'review-master'); ?></label>
             <input type="number" id="numberOfReviewPerProduct" name="numberOfReviewPerProduct" value="1"><br>
 
-            <label for="numberOfReviewRating">Review Rating:</label>
-            <input type="text" id="numberOfReviewRating" name="numberOfReviewRating" placeholder="5 or 1 to 5"><br>
+            <label for="numberOfReviewRating"><?php esc_html_e('Review Rating:', 'review-master'); ?></label>
+            <input type="text" id="numberOfReviewRating" name="numberOfReviewRating" placeholder="<?php esc_attr_e('5 or 1 to 5', 'review-master'); ?>"><br>
 
-            <label for="reviewStartDate">Review Start Date</label>
+            <label for="reviewStartDate"><?php esc_html_e('Review Start Date', 'review-master'); ?></label>
             <input type="date" id="reviewStartDate" name="reviewStartDate" value="<?php echo esc_attr( gmdate("Y-m-d") ); ?>"><br>
 
-            <label for="reviewEndDate">Review End Date</label>
+            <label for="reviewEndDate"><?php esc_html_e('Review End Date', 'review-master'); ?></label>
             <input type="date" id="reviewEndDate" name="reviewEndDate" value="<?php echo esc_attr( gmdate("Y-m-d") )?>"><br>
 
-            <label for="categorySelector">Select Category:</label>
+            <label for="categorySelector"><?php esc_html_e('Select Category:', 'review-master'); ?></label>
             <ul id="selectedCategories" class="selectedCategories">
-                <li id="all_Categories" class="selected-category">All Categories</li>
+                <li id="all_Categories" class="selected-category"><?php esc_html_e('All Categories', 'review-master'); ?></li>
             </ul>
-
 
             <div class="categorySelectHolder" id="categorySelectHolder" style="display: none">
                 <select id="categorySelect" multiple>
-                    <?php if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
-                        foreach ( $terms as $term ) { ?>
-                            <option id="<?php esc_attr_e( $term->slug, 'manage-review' );?>" value="<?php esc_attr_e( $term->slug, 'manage-review' );?>"><?php esc_attr_e( $term->name, 'manage-review' );?></option>
-                        <?php } }?>
+                    <?php if (!empty($terms) && !is_wp_error($terms)) {
+                        foreach ($terms as $term) { ?>
+                            <option id="<?php esc_attr_e($term->slug, 'manage-review'); ?>" value="<?php esc_attr_e($term->slug, 'manage-review'); ?>"><?php esc_attr_e($term->name, 'manage-review'); ?></option>
+                        <?php }
+                    } ?>
                 </select>
             </div>
 
-            <input type="submit" name="submit" value="Add Multiple reviews">
+            <input type="submit" name="submit" value="<?php esc_attr_e('Add Multiple reviews', 'review-master'); ?>">
 
             <div id="testBatchData" class="testBatchData">
                 <div id="status"></div>
@@ -242,25 +243,25 @@ $terms = get_terms( array(
         </form>
     </div>
 
-    <div class="createSingleReviews" id="createSingleReviews" style="display: block">
-        <h2>Single Reviews Added</h2>
+    <div class="createSingleReviews" id="createSingleReviews">
+        <h2><?php esc_html_e('Single Reviews Added', 'review-master'); ?></h2>
         <form method="post" action="" id="createSingleReviewForm">
-            <label for="numberOfReviewPerProduct">Number Of Review </label>
+            <label for="numberOfReviewPerProduct"><?php esc_html_e('Number Of Review', 'review-master'); ?></label>
             <input type="number" id="numberOfSingleReviewPerProduct" name="numberOfSingleReviewPerProduct" value="1"><br>
 
-            <label for="numberOfReviewRating">Review Rating:</label>
-            <input type="text" id="numberOfSingleReviewRating" name="numberOfSingleReviewRating" placeholder="Between 1 to 5"><br>
+            <label for="numberOfReviewRating"><?php esc_html_e('Review Rating:', 'review-master'); ?></label>
+            <input type="text" id="numberOfSingleReviewRating" name="numberOfSingleReviewRating" placeholder="<?php esc_attr_e('Between 1 to 5', 'review-master'); ?>"><br>
 
-            <label for="reviewStartDate">Review Date</label>
-            <input type="date" id="singleReviewStartDate" name="singleReviewStartDate" value="<?php echo esc_attr( gmdate("Y-m-d") ); ?>"><br>
+            <label for="reviewStartDate"><?php esc_html_e('Review Date', 'review-master'); ?></label>
+            <input type="date" id="singleReviewStartDate" name="singleReviewStartDate" value="<?php echo esc_attr(gmdate("Y-m-d")); ?>"><br>
 
-            <label for="numberOfReviewRating">Comment Context:</label>
-            <input type="text" id="commentContextForReview" name="commentContextForReview" placeholder="Write your comments.."><br>
+            <label for="numberOfReviewRating"><?php esc_html_e('Comment Context:', 'review-master'); ?></label>
+            <input type="text" id="commentContextForReview" name="commentContextForReview" placeholder="<?php esc_attr_e('Write your comments..', 'review-master'); ?>"><br>
 
             <div class="titleSearchHolder">
                 <div class="titleSearchContainer">
                     <div class="searchResultContainer" id="searchResultContainer"></div>
-                    <input type="text" class="productTitleSearchBox" id="productTitleSearchBox" placeholder="Product Name Search...">
+                    <input type="text" class="productTitleSearchBox" id="productTitleSearchBox" placeholder="<?php esc_attr_e('Product Name Search...', 'review-master'); ?>">
                     <div class="productDropDownMenu" id="productDropDownMenu">
                         <div class="option-wrapper" id="productTitleWrapper"></div>
                     </div>
@@ -268,17 +269,17 @@ $terms = get_terms( array(
                 <div class="removeSelectedItems">X</div>
             </div>
 
-            <input type="submit" name="submit" value="Add Single reviews">
+            <input type="submit" name="submit" value="<?php esc_attr_e('Add Single reviews', 'review-master'); ?>">
             <div id="testBatchData" class="testBatchData">
                 <div id="status"></div>
             </div>
         </form>
     </div>
 
-
     <div class="progress" id="progressHolder" style="display: none">
         <div id="progress-bar" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
     </div>
+
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
