@@ -28,6 +28,25 @@ class Menu {
             [ $this, 'plugin_page' ], // Callback function to render the page
             'dashicons-star-filled' // Icon
         );
+
+        add_submenu_page(
+            'manage-review',                       // Parent slug
+            __( 'Settings', 'manage-review' ),    // Page title
+            __( 'Settings', 'manage-review' ),    // Menu title
+            'manage_options',                      // Capability
+            'settings',              // Menu slug
+            [ $this,'manage_review_submenu1_page'],       // Function to display submenu 1 page
+        );
+
+        // Add submenu 2
+        /*add_submenu_page(
+            'manage-review',                       // Parent slug
+            __( 'Submenu 2', 'manage-review' ),    // Page title
+            __( 'Submenu 2', 'manage-review' ),    // Menu title
+            'manage_options',                      // Capability
+            'manage-review-submenu2',              // Menu slug
+            [ $this,'manage_review_submenu2_page']          // Function to display submenu 2 page
+        );*/
     }
 
 
@@ -38,6 +57,14 @@ class Menu {
      * @return void
      */
     public function plugin_page() {
+        error_log( print_r( ['Here'=>'Ok'], true ) );
         require_once plugin_dir_path( __FILE__ ) . 'templates/createmailsettings.php';
+    }
+
+    public function manage_review_submenu1_page(){
+        require_once plugin_dir_path( __FILE__ ) . 'templates/settings.php';
+    }
+    public function manage_review_submenu2_page(){
+        require_once plugin_dir_path( __FILE__ ) . 'templates/settings.php';
     }
 }
