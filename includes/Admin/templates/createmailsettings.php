@@ -12,8 +12,8 @@ $terms = get_terms( array(
         padding: 0;
     }
     .reviewMasterContainer {
-        max-width: 600px;
-        margin: 50px auto;
+        max-width: 700px;
+        margin-top: 50px;
         padding: 20px;
         border: 1px solid #ccc;
         border-radius: 5px;
@@ -167,7 +167,7 @@ $terms = get_terms( array(
         cursor: pointer;
         padding: 5px;
         background-color: #ddd4d4;
-        color: #cd2424;
+        color: #f4f4f4;
     }
     .productDropDownMenu{
         width: 100%;
@@ -199,14 +199,60 @@ $terms = get_terms( array(
         background-color: #b2d2ee;
     }
 
+    .rmSingleMultipleBtnHOlder{
+        display: flex;
+        padding: 10px;
+    }
+    .rmChangeSingleMultiple {
+        border: 0;
+        cursor: pointer;
+        display: inline-block;
+        font-family: system-ui, -apple-system, system-ui, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", sans-serif;
+        font-size: 16px;
+        outline: 0;
+        padding: 10px 15px;
+        position: relative;
+        text-align: center;
+        text-decoration: none;
+        transition: all .3s;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: manipulation;
+        margin: 0 3px 0 3px;
+    }
+
+    .borderRadiusMultiple{
+        border-top-left-radius : 10px;
+        border-bottom-left-radius : 10px;
+    }
+    .borderRadiusSingle{
+        border-top-right-radius : 10px;
+        border-bottom-right-radius : 10px;
+    }
+
+    .rmBackgroundColorSelected{
+        background-color: #990000;
+        color: #fff;
+    }
+    .rmBackgroundColor{
+        background-color: #e8ebee;
+        color: #444444;
+    }
 </style>
 
 <div class="reviewMasterContainer">
 
     <h1><?php esc_html_e('Add Reviews', 'review-master'); ?></h1>
 
-    <div class="createMultipleReviews" id="createMultipleReviews">
-        <h2><?php esc_html_e('Multiple Reviews Added', 'review-master'); ?></h2>
+    <div class="rmSingleMultipleBtnHOlder" id="rmSingleMultipleBtnHOlder">
+        <div class="button-wrapper" >
+            <button class="rmChangeSingleMultiple borderRadiusMultiple rmBackgroundColorSelected" id="multipleReviewGenerate" role="button"><?php esc_html_e('Add Multiple Review', 'review-master'); ?></button>
+            <button class="rmChangeSingleMultiple borderRadiusSingle rmBackgroundColor " id="singleReviewGenerate" role="button"><?php esc_html_e('Add Single Review', 'review-master'); ?></button>
+        </div>
+    </div>
+
+    <div class="createMultipleReviews" id="createMultipleReviews" style="display: block">
+        <h2><?php esc_html_e('Multiple Reviews Add', 'review-master'); ?></h2>
         <form method="post" action="" id="createReviewForm">
             <label for="numberOfReviewPerProduct"><?php esc_html_e('Number Of Review Per Product:', 'review-master'); ?></label>
             <input type="number" id="numberOfReviewPerProduct" name="numberOfReviewPerProduct" value="1"><br>
@@ -243,8 +289,8 @@ $terms = get_terms( array(
         </form>
     </div>
 
-    <div class="createSingleReviews" id="createSingleReviews">
-        <h2><?php esc_html_e('Single Reviews Added', 'review-master'); ?></h2>
+    <div class="createSingleReviews" id="createSingleReviews" style="display: none">
+        <h2><?php esc_html_e('Single Reviews Add', 'review-master'); ?></h2>
         <form method="post" action="" id="createSingleReviewForm">
             <label for="numberOfReviewPerProduct"><?php esc_html_e('Number Of Review', 'review-master'); ?></label>
             <input type="number" id="numberOfSingleReviewPerProduct" name="numberOfSingleReviewPerProduct" value="1"><br>
@@ -319,6 +365,20 @@ $terms = get_terms( array(
                 }
             });
         }
+        jQuery('#rmSingleMultipleBtnHOlder').on('click', '.rmChangeSingleMultiple', function() {
+            let text = jQuery(this).text().trim();
+            if( text === 'Add Multiple Review' ){
+                jQuery('#createSingleReviews').fadeOut();
+                jQuery('#createMultipleReviews').fadeIn();
+                jQuery("#singleReviewGenerate").removeClass('rmBackgroundColorSelected').addClass('rmBackgroundColor');
+                jQuery("#multipleReviewGenerate").removeClass('rmBackgroundColor').addClass('rmBackgroundColorSelected');
+            }else{
+                jQuery('#createMultipleReviews').fadeOut();
+                jQuery('#createSingleReviews').fadeIn();
+                jQuery("#multipleReviewGenerate").removeClass('rmBackgroundColorSelected').addClass('rmBackgroundColor');
+                jQuery("#singleReviewGenerate").removeClass('rmBackgroundColor').addClass('rmBackgroundColorSelected');
+            }
+        });
         jQuery('#createSingleReviewForm').on('click', '.removeSingleProduct', function() {
             let removeProductClickedID = jQuery(this).attr('id');
             let removeProductID = removeProductClickedID.replace('removeSingleProduct-', '').trim();
@@ -539,7 +599,7 @@ $terms = get_terms( array(
             per_complt_start = 0;
             animateProgressBar( per_complt_start, 1000 );
             jQuery("#progressHolder").hide();
-            jQuery('#status').text(' Reviews Are Successfully Created ').css({
+            jQuery('#status').text(' Reviews Are Successfully Generated ').css({
                 'color': 'green', // Set text color to blue
                 'font-weight': 'bold' // Set font weight to bold
             });

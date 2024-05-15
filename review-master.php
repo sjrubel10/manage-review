@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Manage Review
+ * Plugin Name: Review Master
  * Description: Product Announcer sends automatic email notifications for new product creations on your WordPress site. Customize emails to match your brand and enhance user engagement. Integrated with the WordPress dashboard, it ensures users stay informed without missing updates.
  * Plugin URI: https://manage-review.co
  * Author: Rubel
