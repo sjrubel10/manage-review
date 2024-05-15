@@ -246,8 +246,8 @@ $terms = get_terms( array(
 
     <div class="rmSingleMultipleBtnHOlder" id="rmSingleMultipleBtnHOlder">
         <div class="button-wrapper" >
-            <button class="rmChangeSingleMultiple borderRadiusMultiple rmBackgroundColorSelected" id="multipleReviewGenerate" role="button"><?php esc_html_e('Add Multiple Review', 'review-master'); ?></button>
-            <button class="rmChangeSingleMultiple borderRadiusSingle rmBackgroundColor " id="singleReviewGenerate" role="button"><?php esc_html_e('Add Single Review', 'review-master'); ?></button>
+            <button class="rmChangeSingleMultiple borderRadiusMultiple rmBackgroundColorSelected" id="multipleReviewGenerate" role="button"><?php esc_html_e('Add Multiple Product Reviews', 'review-master'); ?></button>
+            <button class="rmChangeSingleMultiple borderRadiusSingle rmBackgroundColor " id="singleReviewGenerate" role="button"><?php esc_html_e('Add Single Product Reviews', 'review-master'); ?></button>
         </div>
     </div>
 
@@ -275,7 +275,8 @@ $terms = get_terms( array(
                 <select id="categorySelect" multiple>
                     <?php if (!empty($terms) && !is_wp_error($terms)) {
                         foreach ($terms as $term) { ?>
-                            <option id="<?php esc_attr_e($term->slug, 'manage-review'); ?>" value="<?php esc_attr_e($term->slug, 'manage-review'); ?>"><?php esc_attr_e($term->name, 'manage-review'); ?></option>
+<!--                            <option id="--><?php //esc_attr_e($term->slug, 'manage-review'); ?><!--" value="--><?php //esc_attr_e($term->slug, 'manage-review'); ?><!--">--><?php //esc_attr_e($term->name, 'manage-review'); ?><!--</option>-->
+                            <option id="<?php echo esc_attr($term->slug); ?>" value="<?php echo esc_attr($term->slug); ?>"><?php echo esc_html($term->name); ?></option>
                         <?php }
                     } ?>
                 </select>
@@ -367,7 +368,7 @@ $terms = get_terms( array(
         }
         jQuery('#rmSingleMultipleBtnHOlder').on('click', '.rmChangeSingleMultiple', function() {
             let text = jQuery(this).text().trim();
-            if( text === 'Add Multiple Review' ){
+            if( text === 'Add Multiple Product Reviews' ){
                 jQuery('#createSingleReviews').fadeOut();
                 jQuery('#createMultipleReviews').fadeIn();
                 jQuery("#singleReviewGenerate").removeClass('rmBackgroundColorSelected').addClass('rmBackgroundColor');
