@@ -1,6 +1,6 @@
 {
-    "name": "manage-review/fake",
-    "description": "A WordPress plugin for generating, deleting, editing, and managing fake reviews",
+    "name": "review/master",
+    "description": "A WordPress plugin for generating, deleting, editing, and managing reviews",
     "type": "wordpress-plugin",
     "license": "GPLv2",
     "autoload": {
@@ -14,7 +14,5 @@
         }
     ],
     "minimum-stability": "dev",
-    "require": {
-        "guzzlehttp/guzzle": "8.0.x-dev"
-    }
+    "require": {}
 }
