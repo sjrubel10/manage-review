@@ -57,7 +57,7 @@ class Menu {
      * @return void
      */
     public function plugin_page() {
-        error_log( print_r( ['Here'=>'Ok'], true ) );
+
         require_once plugin_dir_path( __FILE__ ) . 'templates/createmailsettings.php';
     }
 

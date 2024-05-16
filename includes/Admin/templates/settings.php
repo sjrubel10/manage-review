@@ -26,7 +26,7 @@
             padding-bottom: 10px;
         }
         .rmAddCommentFormGroup {
-            margin-bottom: 15px;
+            margin-bottom: 2px;
         }
         .rmAddCommentFormGroup label {
             display: block;
@@ -35,7 +35,7 @@
         }
         .rmAddCommentFormGroup input[type="text"],
         .rmAddCommentFormGroup select {
-            width: 100%;
+            width: calc(100% - 4px);
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 4px;
@@ -50,6 +50,7 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            margin: 10px 0;
         }
         .rmAllReviewCommentList {
             margin: 0;
@@ -69,8 +70,10 @@
             margin-left: 10px;
             color: #ff0000;
             cursor: pointer;
+            height: 30px;
         }
         .commentList{
+            display: flex;
             padding: 3px;
             border-bottom: 1px solid #f0e9e9;
         }
@@ -114,81 +117,101 @@ $initialCommentsArray = array(
 <div class="rmSettingContainer">
     <div class="rmBlockSection">
         <h2>Comment Section</h2>
-        <ul class="rmAllReviewCommentList" id="rmAllReviewCommentList">
-            <!-- Existing comments will be dynamically added here -->
-        </ul>
         <div class="rmAddCommentFormGroup">
             <label for="new-comment">Add Comment:</label>
             <input type="text" id="new-comment" name="new-comment">
             <button id="add-comment">Add Comment</button>
         </div>
+        <ul class="rmAllReviewCommentList" id="rmAllReviewCommentList"></ul>
     </div>
 </div>
 
 <script>
-    // JavaScript for adding and removing comments
     document.addEventListener("DOMContentLoaded", function() {
-        // Initial array of comments
-        var initialComments = <?php echo json_encode($initialCommentsArray); ?>;
+        let initialComments = <?php echo json_encode( $initialCommentsArray ); ?>;
+        var totalComments = initialComments.length;
+        let type = 'POST';
+        let path ='<?php echo esc_url_raw( rest_url( 'createReviews/v1/settings/comment_add_remove' ) ); ?>';
+        let nonce = '<?php echo esc_js( wp_create_nonce( 'wp_rest' ) ); ?>';
+        var settingsFormData = {};
 
-        // Function to render initial comments
         function renderInitialComments() {
-            var commentList = jQuery("#rmAllReviewCommentList");
-            initialComments.forEach(function(comment) {
-                var listItem = jQuery("<li class='commentList'>");
-                var commentSpan = jQuery("<span>").text(comment);
-
-                // Create a remove button
-                var removeButton = jQuery("<button>").text("X").addClass("remove-comment");
-
-                // Add click event listener to remove button
-                removeButton.on("click", function() {
-                    jQuery(this).parent().remove();
-                });
-
-                // Append comment span and remove button to list item
+            let commentList = jQuery("#rmAllReviewCommentList");
+            initialComments.forEach(function( comment, index ) {
+                let listItem = jQuery("<li class='commentList'>");
+                let commentSpan = jQuery("<span>").text(comment);
+                let removeButton = jQuery("<button id='"+index+"'>").text("X").addClass("remove-comment");
                 listItem.append(commentSpan, removeButton);
-
-                // Append list item to comment list
                 commentList.append(listItem);
             });
         }
-
-        // Render initial comments on page load
         renderInitialComments();
 
         // Function to add a new comment
         function addComment() {
-            var commentInput = jQuery("#new-comment");
-            var commentText = commentInput.val().trim();
-
+            let commentInput = jQuery("#new-comment");
+            let commentText = commentInput.val().trim();
             if (commentText !== "") {
-                var commentList = jQuery("#rmAllReviewCommentList");
-                var listItem = jQuery("<li>");
-                var commentSpan = jQuery("<span>").text(commentText);
-
-                // Create a remove button
-                var removeButton = jQuery("<button>").text("X").addClass("remove-comment");
-
-                // Add click event listener to remove button
-                removeButton.on("click", function() {
-                    jQuery(this).parent().remove();
-                });
-
-                // Append comment span and remove button to list item
+                totalComments++ ;
+                // let commentList = jQuery("#rmAllReviewCommentList");
+                let listItem = jQuery("<li class='commentList'>");
+                let commentSpan = jQuery("<span>").text(commentText);
+                initialComments.push( commentText );
+                let removeButton = jQuery("<button id='"+totalComments+"'>").text("X").addClass("remove-comment");
                 listItem.append(commentSpan, removeButton);
 
-                // Append list item to comment list
-                commentList.append(listItem);
+                settingsFormData.comments = initialComments;
+                settingsFormData.nonce = nonce;
+                set_settings_data( settingsFormData, type, path, listItem, 1 );
+                // commentList.prepend( listItem );
 
-                // Clear the input field
-                commentInput.val("");
             }
         }
 
+        function removeComment( getClickedId ){
+            let valueToRemove = jQuery('#'+getClickedId).siblings().text().trim();
+            // alert( valueToRemove );
+            let removeIndex = jQuery.inArray( valueToRemove, initialComments );
+            if ( removeIndex !== -1 ) {
+                totalComments++ ;
+                initialComments.splice( removeIndex, 1);
+            }
+            settingsFormData.comments = initialComments;
+            settingsFormData.nonce = nonce;
+            set_settings_data( settingsFormData, type, path, getClickedId );
+            // console.log( initialComments );
 
+        }
+
+        jQuery('body').on('click', '.remove-comment', function() {
+            let getClickedId = jQuery(this).attr('id');
+            removeComment( getClickedId );
+        });
         // Add click event listener to the "Add Comment" button
         document.getElementById("add-comment").addEventListener("click", addComment);
+
+        function set_settings_data( formData, type, path, removedId, what=0 ){
+            jQuery.ajax({
+                type: type,
+                url: path,
+                contentType: 'application/json',
+                headers: {
+                    'X-WP-Nonce': formData.nonce
+                },
+                data: JSON.stringify(formData),
+                success: function( response ) {
+                    if( what === 0 ){
+                        jQuery('#'+removedId).parent().remove();
+                    }else{
+                        jQuery("#new-comment").val("");
+                        jQuery("#rmAllReviewCommentList").prepend( removedId );
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        }
     });
 </script>
 </body>

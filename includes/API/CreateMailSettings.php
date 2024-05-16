@@ -64,6 +64,7 @@ class CreateMailSettings extends WP_REST_Controller
         $this->make_batch_product = new MakeProductsbatch();
         $this->create_reviews = new CreateReviews();
         $this->comment_contents = HelperFunctions::comment_text();
+
     }
 
     /**
@@ -210,8 +211,7 @@ class CreateMailSettings extends WP_REST_Controller
      * @return bool Whether the request has permission.
      */
 
-    public function get_item_permissions_check($request)
-    {
+    public function get_item_permissions_check($request){
         if (current_user_can('manage_options')) {
             return true;
         }
