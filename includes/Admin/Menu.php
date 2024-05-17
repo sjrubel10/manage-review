@@ -62,9 +62,7 @@ class Menu {
     }
 
     public function manage_review_submenu1_page(){
-        require_once plugin_dir_path( __FILE__ ) . 'templates/settings.php';
-    }
-    public function manage_review_submenu2_page(){
+
         require_once plugin_dir_path( __FILE__ ) . 'templates/settings.php';
     }
 }

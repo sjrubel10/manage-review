@@ -1,25 +1,32 @@
+<?php
+    use Manage\Review\Classes\HelperFunctions;
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings Page</title>
+    <title><?php esc_attr_e('Settings Page', 'review-master'); ?></title>
     <style>
 
         .rmSettingContainer {
+            display: flex;
             max-width: 100%;
             margin: 0 auto;
             background-color: #fff;
             padding: 20px;
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            height: 100%;
         }
         .rmBlockSection {
             margin-bottom: 20px;
             display: block;
             overflow: auto;
             max-height: 400px;
-            width: 600px;
+            max-width: 420px;
+            border: 1px solid #c2d3d3;
+            padding: 10px 5px;
         }
         .rmBlockSection h2 {
             border-bottom: 1px solid #ccc;
@@ -80,47 +87,14 @@
     </style>
 </head>
 <body>
-<?php
-$initialCommentsArray = array(
-    "I've had this product for months now, and it's still as good as new.",
-    "This product is incredibly easy to use, even for someone like me who isn't tech-savvy.",
-    "The sleek design of this product adds a touch of elegance to my workspace.",
-    "I'm amazed by the performance of this product. It handles everything I throw at it effortlessly.",
-    "I purchased this product as a gift for a friend, and they couldn't be happier with it.",
-    "The battery life on this product is impressive. I can go days without needing to recharge.",
-    "I've owned many products from this brand, and this one lives up to their reputation for quality.",
-    "This product is so compact and lightweight, making it perfect for travel.",
-    "I'm pleasantly surprised by the number of features packed into this small device.",
-    "The user interface of this product is intuitive and user-friendly.",
-    "I've tried cheaper alternatives, but they don't compare to the reliability of this product.",
-    "The build quality of this product is excellent. It feels sturdy and well-made.",
-    "This product arrived quickly and was well-packaged to prevent any damage.",
-    "I've been recommending this product to all my friends and family. It's that good!",
-    "The price may seem high, but the quality of this product justifies every penny.",
-    "I've been using this product daily for months now, and it's still going strong.",
-    "The customer support for this product is exceptional. They go above and beyond to help.",
-    "I'm impressed by how versatile this product is. It can handle a wide range of tasks with ease.",
-    "This product has made a noticeable improvement in my daily routine. I couldn't be happier with it.",
-    "I love the attention to detail that went into designing this product. It's clear that a lot of thought was put into it.",
-    "I've had issues with similar products in the past, but this one performs flawlessly.",
-    "The included instructions were clear and easy to follow, making setup a breeze.",
-    "I was hesitant to purchase this product at first, but now I wish I had bought it sooner.",
-    "This product is perfect for anyone looking to upgrade their current setup.",
-    "I've received numerous compliments on this product since I started using it.",
-    "I've been using this product for weeks now, and it's still exceeding my expectations.",
-    "The build quality of this product is top-notch. It feels like it will last for years to come.",
-    "I'm impressed by the range of colors available for this product. There's something for everyone.",
-    "I purchased this product on a whim, and it turned out to be one of the best decisions I've made.",
-    "This product has become an essential part of my daily routine. I don't know how I lived without it."
-);
-?>
+<?php $initialCommentsArray = HelperFunctions::comment_text(); ?>
 <div class="rmSettingContainer">
     <div class="rmBlockSection">
-        <h2>Comment Section</h2>
+        <h2><?php esc_attr_e('Comment Set', 'review-master'); ?></h2>
         <div class="rmAddCommentFormGroup">
-            <label for="new-comment">Add Comment:</label>
+            <label for="new-comment"><?php esc_attr_e('Add Comment:', 'review-master'); ?></label>
             <input type="text" id="new-comment" name="new-comment">
-            <button id="add-comment">Add Comment</button>
+            <button id="add-comment"><?php esc_attr_e('Add Comment', 'review-master'); ?></button>
         </div>
         <ul class="rmAllReviewCommentList" id="rmAllReviewCommentList"></ul>
     </div>
@@ -153,7 +127,6 @@ $initialCommentsArray = array(
             let commentText = commentInput.val().trim();
             if (commentText !== "") {
                 totalComments++ ;
-                // let commentList = jQuery("#rmAllReviewCommentList");
                 let listItem = jQuery("<li class='commentList'>");
                 let commentSpan = jQuery("<span>").text(commentText);
                 initialComments.push( commentText );
@@ -163,14 +136,11 @@ $initialCommentsArray = array(
                 settingsFormData.comments = initialComments;
                 settingsFormData.nonce = nonce;
                 set_settings_data( settingsFormData, type, path, listItem, 1 );
-                // commentList.prepend( listItem );
-
             }
         }
 
         function removeComment( getClickedId ){
             let valueToRemove = jQuery('#'+getClickedId).siblings().text().trim();
-            // alert( valueToRemove );
             let removeIndex = jQuery.inArray( valueToRemove, initialComments );
             if ( removeIndex !== -1 ) {
                 totalComments++ ;
@@ -179,8 +149,6 @@ $initialCommentsArray = array(
             settingsFormData.comments = initialComments;
             settingsFormData.nonce = nonce;
             set_settings_data( settingsFormData, type, path, getClickedId );
-            // console.log( initialComments );
-
         }
 
         jQuery('body').on('click', '.remove-comment', function() {
