@@ -77,7 +77,7 @@ final class Manage_Review {
      * @return void
      */
     public function init_plugin() {
-//        new SendMailAfterOrderDone();
+        new SendMailAfterOrderDone();
         if ( is_admin() ) {
             new Manage\Review\Admin();
         } else {
