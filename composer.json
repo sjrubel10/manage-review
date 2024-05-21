@@ -6,15 +6,13 @@
     "autoload": {
         "psr-4": {
             "Manage\\Review\\": "includes/"
-        }
+        },
+        "files": []
     },
     "authors": [
         {
             "name": "sjrubel10"
         }
     ],
-    "minimum-stability": "dev",
-    "require": {
-        "phpmailer/phpmailer": "dev-master"
-    }
+    "minimum-stability": "dev"
 }
