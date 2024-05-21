@@ -2,8 +2,14 @@
 
 namespace Manage\Review\Classes;
 
-use Manage\Review\Classes\PHPMailer\Exception;
-use Manage\Review\Classes\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+if ( !class_exists('PHPMailer\PHPMailer\PHPMailer' ) ) {
+    require_once(\ABSPATH . \WPINC . "/PHPMailer/PHPMailer.php");
+    require_once(\ABSPATH . \WPINC . "/PHPMailer/Exception.php");
+    require_once(\ABSPATH . \WPINC . "/PHPMailer/SMTP.php");
+}
 
 class ReviewRequest{
 
@@ -110,7 +116,6 @@ class ReviewRequest{
     public function send_custom_mail( $customer_email, $email_subject, $email_body, $headers ) {
         try {
             $mail = new PHPMailer(true );
-//            error_log( print_r( ['$mail'=>$mail], true ) );
             $mail->isSMTP();
             $is_mail_sent = $this->send_mail( $mail, $customer_email, $email_subject, $email_body, $headers );
             return 'Email sent successfully';
