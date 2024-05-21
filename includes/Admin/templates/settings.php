@@ -102,7 +102,7 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        let initialComments = <?php echo json_encode( $initialCommentsArray ); ?>;
+        let initialComments = <?php echo wp_json_encode( $initialCommentsArray ); ?>;
         var totalComments = initialComments.length;
         let type = 'POST';
         let path ='<?php echo esc_url_raw( rest_url( 'createReviews/v1/settings/comment_add_remove' ) ); ?>';

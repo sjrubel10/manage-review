@@ -97,7 +97,7 @@ class ReviewRequest{
                             <p>Your Company Name</p>
                         </div>
                         <div class='footer'>
-                            <p>&copy; " . date('Y') . " Your Company Name. All rights reserved.</p>
+                            <p>&copy; " . gmdate('Y') . " Your Company Name. All rights reserved.</p>
                         </div>
                     </div>
                 </body>

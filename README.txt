@@ -14,6 +14,8 @@ Tested up to: 5.9
 Stable tag: 1.0.0
 */
 
+Manage WooCommerce product reviews: create, edit, export, and request reviews via email, streamlining your store's review process.
+
 /**
  * Description:
  * The Product Announcer plugin for WordPress keeps your users informed by sending them automatic email notifications whenever a new product is created on your website. This ensures that your users never miss out on important updates and new offerings. With customizable email templates and easy-to-use settings, you can tailor notifications to suit your audience's preferences and enhance user engagement. The plugin is SEO-friendly and seamlessly integrates with the WordPress dashboard.
