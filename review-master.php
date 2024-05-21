@@ -11,8 +11,6 @@
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  */
 
-use Manage\Review\Classes\SendMailAfterOrderDone;
-
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
@@ -77,11 +75,9 @@ final class Manage_Review {
      * @return void
      */
     public function init_plugin() {
-
         if ( is_admin() ) {
             new Manage\Review\Admin();
         } else {
-            new SendMailAfterOrderDone();
             new Manage\Review\Frontend();
         }
 

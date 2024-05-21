@@ -7,11 +7,11 @@ class SendMailAfterOrderDone{
     private $review_request;
     public function __construct(){
         $this->review_request = new ReviewRequest();
-        add_action('woocommerce_order_status_changed', array( $this, 'custom_action_on_order_complete' ), 10, 4 );
+//        add_action('woocommerce_order_status_changed', array( $this, 'custom_action_on_order_complete' ), 10, 4 );
+        add_action('woocommerce_order_status_pending_to_processing', array( $this, 'custom_action_on_order_complete' ), 10, 2 );
     }
 
-    public function custom_action_on_order_complete( $order_id, $from, $to, $get_data ) {
-
+    public function custom_action_on_order_complete( $order_id, $get_data ) {
         $order = wc_get_order( $order_id );
         $ordered_products = [];
         foreach ( $order->get_items() as $item_id => $item ) {
@@ -35,9 +35,10 @@ class SendMailAfterOrderDone{
             'order_total' => $order_total,
             'order_id' => $order_id,
         );
+//        error_log( print_r( ['$ordered_info' => $ordered_info ], true ) );
 
         $is_done = $this->review_request->make_review_request_after_order_completed( $ordered_info );
-//        error_log( print_r( [ '$ordered_info' => $ordered_info ], true ) );
+//        $is_done = true;
         return $is_done;
     }
 

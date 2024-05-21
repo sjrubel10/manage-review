@@ -13,11 +13,24 @@ if ( !class_exists('PHPMailer\PHPMailer\PHPMailer' ) ) {
 
 class ReviewRequest{
 
+    public function make_product_link_for_getting_review( $product_titles ){
+        $title_btn = '<div class="review-button">';
+        foreach ( $product_titles as $product_title ){
+            $tlt = $product_title["title"];
+            $link = $product_title["product_url"];
+            $title_btn .= "<a href='$link' target='_blank'>$tlt</a>";
+        }
+        $title_btn .= '</div>';
+
+        return $title_btn;
+    }
     public function make_review_request_after_order_completed( $ordered_info ){
         $customer_name = $ordered_info['ordered_name'];
         $order_id = $ordered_info['order_id'];
         $order_date = '';
         $review_link = "https://example.com/review?order_id=" . $order_id;
+
+        $tltbtn = $this->make_product_link_for_getting_review( $ordered_info['ordered_products'] );
 
         $customer_email = $ordered_info['billing_email'];
         $email_subject = "We'd Love Your Feedback on Your Recent Order!";
@@ -58,16 +71,19 @@ class ReviewRequest{
                         }
                         .review-button {
                             display: block;
+                            float: left;
                             width: 100%;
                             text-align: center;
                             margin: 20px 0;
                         }
                         .review-button a {
+                            float: left;
                             background-color: #0073aa;
                             color: #ffffff;
                             padding: 10px 20px;
                             text-decoration: none;
                             border-radius: 5px;
+                            margin: 5px 10px;
                         }
                         .review-button a:hover {
                             background-color: #005a87;
@@ -89,9 +105,7 @@ class ReviewRequest{
                             <p>Hi $customer_name,</p>
                             <p>We hope you are enjoying your recent purchase from our store. Your feedback is important to us and helps us improve our services.</p>
                             <p>Would you mind taking a moment to leave a review for your order placed on $order_date? It would mean a lot to us!</p>
-                            <div class='review-button'>
-                                <a href='$review_link' target='_blank'>Leave a Review</a>
-                            </div>
+                            $tltbtn
                             <p>Thank you for your time and support!</p>
                             <p>Best regards,</p>
                             <p>Your Company Name</p>
@@ -125,7 +139,6 @@ class ReviewRequest{
     }
     public function send_mail( $mail, $customer_email, $email_subject, $email_body, $headers ) {
 
-        $customer_email = 'rubel.webappick@gmail.com';
         // Configure SMTP settings here
 //        $send_mail_settings_data = get_option('PA_send_mail_settings');
 //        $mail_from = trim( $send_mail_settings_data['email'] );
