@@ -1,9 +1,11 @@
 <?php
 $taxonomy = 'product_cat'; // WooCommerce product category taxonomy
-$terms = get_terms( array(
-    'taxonomy' => $taxonomy,
-    'hide_empty' => false, // Set to false to include empty categories
-));
+$terms = get_terms(
+            array(
+                'taxonomy' => $taxonomy,
+                'hide_empty' => false, // Set to false to include empty categories
+            )
+        );
 ?>
 <style>
     body {
@@ -273,10 +275,9 @@ $terms = get_terms( array(
 
             <div class="categorySelectHolder" id="categorySelectHolder" style="display: none">
                 <select id="categorySelect" multiple>
-                    <?php if (!empty($terms) && !is_wp_error($terms)) {
-                        foreach ($terms as $term) { ?>
-<!--                            <option id="--><?php //esc_attr_e($term->slug, 'manage-review'); ?><!--" value="--><?php //esc_attr_e($term->slug, 'manage-review'); ?><!--">--><?php //esc_attr_e($term->name, 'manage-review'); ?><!--</option>-->
-                            <option id="<?php echo esc_attr($term->slug); ?>" value="<?php echo esc_attr($term->slug); ?>"><?php echo esc_html($term->name); ?></option>
+                    <?php if ( !empty( $terms ) && !is_wp_error( $terms ) ) {
+                        foreach ( $terms as $term ) { ?>
+                            <option id="<?php echo esc_attr( $term->slug ); ?>" value="<?php echo esc_attr( $term->slug ); ?>"><?php echo esc_html( $term->name ); ?></option>
                         <?php }
                     } ?>
                 </select>

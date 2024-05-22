@@ -2,6 +2,7 @@
 
 namespace Manage\Review\API;
 
+use WP_Error;
 use WP_REST_Controller;
 use WP_REST_Response;
 use WP_REST_Server;
@@ -32,7 +33,8 @@ class MakeSettingsChnage extends WP_REST_Controller {
     public function add_remove_comment_text( $request ){
         $nonce = $request->get_header('X-WP-Nonce');
         if (!wp_verify_nonce($nonce, 'wp_rest')) {
-            return new WP_Error('invalid_nonce', 'Invalid nonce.', array('status' => 403));
+
+            return new WP_Error( 'invalid_nonce', __( 'Invalid nonce.', 'review-master' ), array( 'status' => 403 ) );
         }
 
         // Retrieve form data

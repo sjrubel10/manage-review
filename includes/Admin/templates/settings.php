@@ -1,5 +1,6 @@
 <?php
-    use Manage\Review\Classes\HelperFunctions;
+// Load the necessary class for helper functions
+use Manage\Review\Classes\HelperFunctions;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -8,7 +9,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php esc_attr_e('Settings Page', 'review-master'); ?></title>
     <style>
-
         .rmSettingContainer {
             display: flex;
             max-width: 100%;
@@ -69,7 +69,6 @@
         }
         .rmAllReviewCommentList li span {
             display: inline-block;
-            /*background-color: #f2f2f2;*/
             padding: 5px 10px;
             border-radius: 5px;
         }
@@ -79,7 +78,7 @@
             cursor: pointer;
             height: 30px;
         }
-        .commentList{
+        .commentList {
             display: flex;
             padding: 3px;
             border-bottom: 1px solid #f0e9e9;
@@ -87,7 +86,10 @@
     </style>
 </head>
 <body>
-<?php $initialCommentsArray = HelperFunctions::comment_text(); ?>
+<?php
+// Retrieve initial comments using a helper function
+$initialCommentsArray = HelperFunctions::comment_text();
+?>
 <div class="rmSettingContainer">
     <div class="rmBlockSection">
         <h2><?php esc_attr_e('Comment Set', 'review-master'); ?></h2>
@@ -102,19 +104,20 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        let initialComments = <?php echo wp_json_encode( $initialCommentsArray ); ?>;
+        let initialComments = <?php echo wp_json_encode($initialCommentsArray); ?>;
         var totalComments = initialComments.length;
         let type = 'POST';
-        let path ='<?php echo esc_url_raw( rest_url( 'createReviews/v1/settings/comment_add_remove' ) ); ?>';
-        let nonce = '<?php echo esc_js( wp_create_nonce( 'wp_rest' ) ); ?>';
+        let path = '<?php echo esc_url_raw(rest_url('createReviews/v1/settings/comment_add_remove')); ?>';
+        let nonce = '<?php echo esc_js(wp_create_nonce('wp_rest')); ?>';
         var settingsFormData = {};
 
+        // Render initial comments on the page
         function renderInitialComments() {
             let commentList = jQuery("#rmAllReviewCommentList");
-            initialComments.forEach(function( comment, index ) {
+            initialComments.forEach(function(comment, index) {
                 let listItem = jQuery("<li class='commentList'>");
                 let commentSpan = jQuery("<span>").text(comment);
-                let removeButton = jQuery("<button id='"+index+"'>").text("X").addClass("remove-comment");
+                let removeButton = jQuery("<button id='" + index + "'>").text("X").addClass("remove-comment");
                 listItem.append(commentSpan, removeButton);
                 commentList.append(listItem);
             });
@@ -126,39 +129,43 @@
             let commentInput = jQuery("#new-comment");
             let commentText = commentInput.val().trim();
             if (commentText !== "") {
-                totalComments++ ;
+                totalComments++;
                 let listItem = jQuery("<li class='commentList'>");
                 let commentSpan = jQuery("<span>").text(commentText);
-                initialComments.push( commentText );
-                let removeButton = jQuery("<button id='"+totalComments+"'>").text("X").addClass("remove-comment");
+                initialComments.push(commentText);
+                let removeButton = jQuery("<button id='" + totalComments + "'>").text("X").addClass("remove-comment");
                 listItem.append(commentSpan, removeButton);
 
                 settingsFormData.comments = initialComments;
                 settingsFormData.nonce = nonce;
-                set_settings_data( settingsFormData, type, path, listItem, 1 );
+                set_settings_data(settingsFormData, type, path, listItem, 1);
             }
         }
 
-        function removeComment( getClickedId ){
-            let valueToRemove = jQuery('#'+getClickedId).siblings().text().trim();
-            let removeIndex = jQuery.inArray( valueToRemove, initialComments );
-            if ( removeIndex !== -1 ) {
-                totalComments++ ;
-                initialComments.splice( removeIndex, 1);
+        // Function to remove a comment
+        function removeComment(getClickedId) {
+            let valueToRemove = jQuery('#' + getClickedId).siblings().text().trim();
+            let removeIndex = jQuery.inArray(valueToRemove, initialComments);
+            if (removeIndex !== -1) {
+                totalComments++;
+                initialComments.splice(removeIndex, 1);
             }
             settingsFormData.comments = initialComments;
             settingsFormData.nonce = nonce;
-            set_settings_data( settingsFormData, type, path, getClickedId );
+            set_settings_data(settingsFormData, type, path, getClickedId);
         }
 
+        // Event listener for removing a comment
         jQuery('body').on('click', '.remove-comment', function() {
             let getClickedId = jQuery(this).attr('id');
-            removeComment( getClickedId );
+            removeComment(getClickedId);
         });
+
         // Add click event listener to the "Add Comment" button
         document.getElementById("add-comment").addEventListener("click", addComment);
 
-        function set_settings_data( formData, type, path, removedId, what=0 ){
+        // Function to send settings data via AJAX
+        function set_settings_data(formData, type, path, removedId, what = 0) {
             jQuery.ajax({
                 type: type,
                 url: path,
@@ -167,12 +174,12 @@
                     'X-WP-Nonce': formData.nonce
                 },
                 data: JSON.stringify(formData),
-                success: function( response ) {
-                    if( what === 0 ){
-                        jQuery('#'+removedId).parent().remove();
-                    }else{
+                success: function(response) {
+                    if (what === 0) {
+                        jQuery('#' + removedId).parent().remove();
+                    } else {
                         jQuery("#new-comment").val("");
-                        jQuery("#rmAllReviewCommentList").prepend( removedId );
+                        jQuery("#rmAllReviewCommentList").prepend(removedId);
                     }
                 },
                 error: function(xhr, status, error) {

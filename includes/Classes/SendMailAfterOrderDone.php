@@ -8,7 +8,8 @@ class SendMailAfterOrderDone{
     public function __construct(){
         $this->review_request = new ReviewRequest();
 //        add_action('woocommerce_order_status_changed', array( $this, 'custom_action_on_order_complete' ), 10, 4 );
-        add_action('woocommerce_order_status_pending_to_processing', array( $this, 'custom_action_on_order_complete' ), 10, 2 );
+//        add_action('woocommerce_order_status_pending_to_processing', array( $this, 'custom_action_on_order_complete' ), 10, 2 );
+        add_action('woocommerce_order_status_pending_to_on-hold', array( $this, 'custom_action_on_order_complete' ), 10, 2 );
     }
 
     public function custom_action_on_order_complete( $order_id, $get_data ) {
