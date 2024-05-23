@@ -39,14 +39,14 @@ class Menu {
         );
 
         // Add submenu 2
-        /*add_submenu_page(
-            'manage-review',                       // Parent slug
-            __( 'Submenu 2', 'manage-review' ),    // Page title
-            __( 'Submenu 2', 'manage-review' ),    // Menu title
-            'manage_options',                      // Capability
-            'manage-review-submenu2',              // Menu slug
-            [ $this,'manage_review_submenu2_page']          // Function to display submenu 2 page
-        );*/
+        add_submenu_page(
+            'manage-review',                // Parent slug
+            __( 'Manage Reviews', 'manage-review' ),   // Page title
+            __( 'Manage Reviews', 'manage-review' ),   // Menu title
+            'manage_options',                 // Capability
+            'manage-reviews',                // Menu slug
+            [ $this,'get_reviews_for_manage']          // Function to display submenu 2 page
+        );
     }
 
 
@@ -64,5 +64,9 @@ class Menu {
     public function manage_review_submenu1_page(){
 
         require_once plugin_dir_path( __FILE__ ) . 'templates/settings.php';
+    }
+    public function get_reviews_for_manage(){
+
+        require_once plugin_dir_path( __FILE__ ) . 'templates/manage-reviews.php';
     }
 }
