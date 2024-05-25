@@ -157,7 +157,7 @@ error_log( print_r( ['$reviews_data'=>$reviews], true ) );
             width: 100%;
             padding: 20px;
             background: #fafafa;
-            border: 1px solid #ddd;
+            border: 1px solid #efecec;
             border-radius: 5px;
             box-sizing: border-box;
         }
