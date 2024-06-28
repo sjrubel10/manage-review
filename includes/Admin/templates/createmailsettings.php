@@ -232,8 +232,12 @@ $terms = get_terms(
         border-bottom-right-radius : 10px;
     }
 
+    .rmBackgroundColor:hover {
+        background-color: #13396d;
+        color: #fff;
+    }
     .rmBackgroundColorSelected{
-        background-color: #990000;
+        background-color: #4b6a94;
         color: #fff;
     }
     .rmBackgroundColor{

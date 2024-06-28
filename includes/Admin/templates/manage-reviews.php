@@ -1,5 +1,4 @@
 <?php
-
 function get_woocommerce_reviews($search_product_title = '', $search_rating = '') {
     // Define the arguments for getting comments
     $args = [
